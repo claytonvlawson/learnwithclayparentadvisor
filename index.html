@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parent Advisor: Vault Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #020617;
+    --fg: #f1f5f9;
+    --muted: #64748b;
+    --accent: #22d3ee;
+    --emerald: #34d399;
+    --violet: #a78bfa;
+    --rose: #fb7185;
+    --card: rgba(15, 23, 42, 0.8);
+    --border: rgba(30, 41, 59, 0.5);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    min-height: 100vh;
+    padding: 2rem;
+    line-height: 1.6;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  .header { margin-bottom: 2rem; }
+  .header h1 {
+    font-size: 1.875rem; font-weight: 700; letter-spacing: -0.025em; margin-bottom: 0.5rem;
+  }
+  .header p { color: var(--muted); font-size: 0.875rem; font-family: 'JetBrains Mono', monospace; }
+  .pulse-dot {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--emerald); margin-right: 0.5rem; vertical-align: middle;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.5); }
+    70% { box-shadow: 0 0 0 8px rgba(52, 211, 153, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+  }
+  .badge {
+    display: inline-block; font-size: 0.625rem; padding: 0.125rem 0.5rem;
+    border-radius: 999px; font-family: 'JetBrains Mono', monospace;
+    background: rgba(6, 78, 59, 0.6); color: var(--emerald); border: 1px solid var(--emerald);
+  }
+  .section-head {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem;
+  }
+  .section { margin-bottom: 2.5rem; }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1.5rem;
+  }
+  /* Steps */
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; }
+  .step {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 0.75rem; padding: 1rem; cursor: pointer;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .step:hover { transform: translateY(-2px); }
+  .step.active { border-color: var(--accent); }
+  .step .num {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.625rem;
+    color: var(--accent); letter-spacing: 0.1em; display: block; margin-bottom: 0.5rem;
+  }
+  .step h3 { font-size: 0.9375rem; font-weight: 600; margin-bottom: 0.5rem; }
+  .step p { font-size: 0.75rem; color: var(--muted); line-height: 1.5; }
+  .diagram { margin-top: 1.25rem; text-align: center; }
+  .diagram text {
+    font-family: 'JetBrains Mono', monospace; fill: var(--muted); font-size: 11px;
+  }
+  .diagram text.on { fill: var(--accent); font-weight: 600; }
+  /* Chat */
+  .chat-container {
+    height: 420px; overflow-y: auto; margin-bottom: 1rem; padding-right: 1rem;
+  }
+  .message { margin-bottom: 1rem; max-width: 90%; display: flex; gap: 0.5rem; }
+  .parent { margin-left: auto; flex-direction: row-reverse; }
+  .advisor { margin-right: auto; }
+  .avatar {
+    width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+    background: var(--accent); color: var(--bg);
+    font-size: 0.6875rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .parent .avatar { background: var(--violet); }
+  .message-content {
+    padding: 0.75rem 1rem; border-radius: 1rem; font-size: 0.875rem; line-height: 1.55;
+  }
+  .parent .message-content {
+    background: var(--violet); color: #0b0616; font-weight: 500;
+    border-radius: 1rem 1rem 0.25rem 1rem;
+  }
+  .advisor .message-content {
+    background: var(--card); color: var(--fg);
+    border: 1px solid var(--border);
+    border-radius: 1rem 1rem 1rem 0.25rem;
+  }
+  .advisor .message-content .cite {
+    display: block; margin-top: 0.6rem; font-size: 0.6875rem;
+    color: var(--accent); font-family: 'JetBrains Mono', monospace;
+  }
+  .message-content ul { padding-left: 1.1rem; margin: 0.4rem 0; }
+  .message-content strong { color: var(--rose); }
+  .form-control { display: flex; gap: 0.5rem; }
+  .form-control input {
+    flex: 1; padding: 0.65rem 0.85rem;
+    border: 1px solid var(--border); border-radius: 0.5rem;
+    background: var(--bg); color: var(--fg);
+    font-family: inherit; font-size: 0.875rem;
+  }
+  .form-control input:focus { outline: none; border-color: var(--accent); }
+  .send-btn {
+    padding: 0.65rem 1.1rem; background: var(--accent); color: var(--bg);
+    border: none; border-radius: 0.5rem; font-family: inherit;
+    font-size: 0.875rem; font-weight: 600; cursor: pointer; white-space: nowrap;
+  }
+  .send-btn:hover { opacity: 0.9; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+  .chip {
+    background: transparent; border: 1px solid var(--border); color: var(--muted);
+    border-radius: 999px; padding: 0.3rem 0.85rem; font-size: 0.75rem;
+    font-family: inherit; cursor: pointer;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  /* CTAs */
+  .ctas { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem; }
+  .cta {
+    display: inline-block; padding: 0.85rem 1.5rem; border-radius: 0.5rem;
+    font-weight: 600; font-size: 0.9375rem; text-decoration: none;
+  }
+  .cta-primary { background: var(--emerald); color: #02150d; }
+  .cta-secondary {
+    border: 1px solid var(--accent); color: var(--accent);
+  }
+  .footer {
+    margin-top: 3rem; padding-top: 1.25rem; border-top: 1px solid var(--border);
+    font-size: 0.75rem; color: var(--muted); font-family: 'JetBrains Mono', monospace;
+    text-align: center;
+  }
+  .cites { margin-top: 0.6rem; border-top: 1px solid var(--border); padding-top: 0.5rem; }
+  .cites .cite-head {
+    display: block; font-size: 0.6875rem; color: var(--accent);
+    font-family: 'JetBrains Mono', monospace; margin-bottom: 0.35rem;
+  }
+  .cites ul { list-style: none; padding: 0; margin: 0; }
+  .cites li { font-size: 0.75rem; color: var(--muted); margin-bottom: 0.3rem; line-height: 1.45; }
+  .cites a.doi-link {
+    color: var(--accent); text-decoration: none; border-bottom: 1px dotted var(--accent);
+  }
+  .cites a.doi-link:hover { color: var(--emerald); border-bottom-color: var(--emerald); }
+
+  @media (max-width: 700px) {
+    body { padding: 1rem; }
+    .steps { grid-template-columns: repeat(2, 1fr); }
+    .chat-container { height: 320px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <h1><span class="pulse-dot"></span>Parent Advisor</h1>
+    <p>A knowledge base your experts control, and the assistant that answers out of it. Preview derived from the vault (1,300+ notes).</p>
+  </div>
+
+  <div class="section">
+    <div class="section-head">How it works <span class="badge">4 STEPS</span></div>
+    <div class="steps">
+      <div class="step" data-step="1" id="step1">
+        <span class="num">STEP 1</span>
+        <h3>Curate</h3>
+        <p>People who know the field write it. Nothing goes in until it is read. Written and checked by hand.</p>
+      </div>
+      <div class="step" data-step="2" id="step2">
+        <span class="num">STEP 2</span>
+        <h3>Connect</h3>
+        <p>One question reaches the whole vault. Notes are written the way families type. The vault stays on your machines.</p>
+      </div>
+      <div class="step" data-step="3" id="step3">
+        <span class="num">STEP 3</span>
+        <h3>Retrieve</h3>
+        <p>A question pulls out the right passages. The model sees nothing else. A silent vault gets an honest answer.</p>
+      </div>
+      <div class="step" data-step="4" id="step4">
+        <span class="num">STEP 4</span>
+        <h3>Answer</h3>
+        <p>Replies cite the notes behind them. Clinical questions go to a person. Safety paths fire before the model. A human is always the expert.</p>
+      </div>
+    </div>
+    <div class="diagram">
+      <svg width="100%" height="80" viewBox="0 0 720 80" xmlns="http://www.w3.org/2000/svg">
+        <line x1="70" y1="40" x2="650" y2="40" stroke="rgba(30,41,59,1)" stroke-width="2"/>
+        <circle id="d1" cx="90" cy="40" r="7" fill="#020617" stroke="#64748b" stroke-width="2"/>
+        <circle id="d2" cx="270" cy="40" r="7" fill="#020617" stroke="#64748b" stroke-width="2"/>
+        <circle id="d3" cx="450" cy="40" r="7" fill="#020617" stroke="#64748b" stroke-width="2"/>
+        <circle id="d4" cx="630" cy="40" r="7" fill="#020617" stroke="#64748b" stroke-width="2"/>
+        <text id="t1" x="90" y="20" text-anchor="middle">CURATE</text>
+        <text id="t2" x="270" y="20" text-anchor="middle">CONNECT</text>
+        <text id="t3" x="450" y="20" text-anchor="middle">RETRIEVE</text>
+        <text id="t4" x="630" y="20" text-anchor="middle">ANSWER</text>
+        <text id="s1" x="90" y="68" text-anchor="middle">read first</text>
+        <text id="s2" x="270" y="68" text-anchor="middle">one question, whole vault</text>
+        <text id="s3" x="450" y="68" text-anchor="middle">right passages only</text>
+        <text id="s4" x="630" y="68" text-anchor="middle">cited, human expert</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">Ask the Advisor <span class="badge">PREVIEW</span></div>
+    <div class="card">
+      <div class="chat-container" id="chatTranscript"></div>
+      <div class="form-control">
+        <input type="text" id="chatInput" placeholder="Ask a question the way you would type it..." aria-label="Ask the Advisor">
+        <button class="send-btn" id="sendBtn">Ask</button>
+      </div>
+      <div class="chips">
+        <button class="chip">Will sign language stop my child from learning to speak?</button>
+        <button class="chip">What is language deprivation?</button>
+        <button class="chip">What rights does my Deaf child have at school?</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ctas">
+    <a class="cta cta-primary" href="https://calendly.com/clayton-learnwithclay">Request a scoping call</a>
+    <a class="cta cta-secondary" href="https://learnwithclay.ai">See the live assistant →</a>
+  </div>
+
+  <div class="footer">
+    A knowledge base your experts control, and the assistant that answers out of it &middot; Built by Clayton Lawson &middot; learnwithclay.ai
+  </div>
+
+</div>
+
+<script>
+(function () {
+  var transcript = document.getElementById('chatTranscript');
+  var input = document.getElementById('chatInput');
+  var sendBtn = document.getElementById('sendBtn');
+
+  // ---- Step diagram interaction ----
+  var colors = ['#22d3ee', '#34d399', '#a78bfa', '#fb7185'];
+  document.querySelectorAll('.step').forEach(function (el) {
+    el.addEventListener('click', function () {
+      var n = el.getAttribute('data-step');
+      document.querySelectorAll('.step').forEach(function (s) { s.classList.remove('active'); });
+      el.classList.add('active');
+      for (var i = 1; i <= 4; i++) {
+        var dot = document.getElementById('d' + i);
+        var label = document.getElementById('t' + i);
+        var sub = document.getElementById('s' + i);
+        if (String(i) === n) {
+          dot.setAttribute('stroke', colors[i - 1]);
+          label.classList.add('on');
+          label.setAttribute('fill', colors[i - 1]);
+          sub.setAttribute('fill', colors[i - 1]);
+        } else {
+          dot.setAttribute('stroke', '#64748b');
+          label.classList.remove('on');
+          label.setAttribute('fill', '#64748b');
+          sub.setAttribute('fill', '#64748b');
+        }
+      }
+    });
+  });
+
+  // ---- Advisor answer paths ----
+  var CRISIS_PATTERNS = [
+    /suicide/i, /suicidal/i, /kill myself/i, /killing myself/i, /end my life/i,
+    /want to die/i, /wanna die/i, /hurt(ing)? myself/i, /self[- ]?harm/i,
+    /overdose/i, /abus(e|ed|ive)/i, /hitting me/i, /beat(ing)? me/i,
+    /emergency/i, /crisis/i, /unsafe/i, /scared for my (child|kid|son|daughter)/i
+  ];
+
+  var crisisAnswer =
+    '<strong>If you or your child is in danger right now, please reach out first:</strong>' +
+    '<ul>' +
+    '<li>988 Suicide and Crisis Lifeline: call or text 988 (US). ASL video line available.</li>' +
+    '<li>Deaf-specific crisis lines: Crisis Text Line (text HOME to 741741); Deaf Counseling Center and state Deaf crisis services offer video access.</li>' +
+    '<li>If a child is being abused or is unsafe: Child Protective Services (CPS) at 1-800-4-A-CHILD (1-800-422-4453), or 911.</li>' +
+    '</ul>' +
+    'This preview keeps safety ahead of research language. A crisis question gets crisis resources first, always. ' +
+    'In the live system, safety paths fire before the model, and clinical questions route to a person.' +
+    '<span class="cite">Safety path: fires before retrieval. Human experts stay in the loop.</span>';
+
+  var deprivationAnswer =
+    'Language deprivation happens when a Deaf child does not get full access to a language during the early years, when the brain is built to acquire one. ' +
+    'It is a lack of access, and the field describes it as deprivation, not a delay. Hearing status does not limit language capacity. Access does.' +
+    '<ul>' +
+    '<li>Full, early language access (most reliably ASL) gives a child the tools to be safe, to disclose, and to be believed.</li>' +
+    '<li>Spoken language support and sign language are an AND, never an either/or.</li>' +
+    '<li>Every deaf child needs a full, accessible first language now.</li>' +
+    '</ul>' +
+    'The vault holds the primary research and parent-plain summaries behind this. Every answer in the live system cites the notes it came from.' +
+    '<span class="cite">Grounded in: vault notes on language deprivation, early access, and disclosure.</span>';
+
+  var aslCiAnswer =
+    'The evidence does not support the claim that a cochlear implant means waiting on sign language. ' +
+    'The non-negotiable part: every deaf child needs a full, accessible first language now.' +
+    '<ul>' +
+    '<li>Many families use a bilingual-bimodal frame: ASL and spoken language together, with the implant as one tool among several.</li>' +
+    '<li>Signing does not block spoken language development. A child with a strong first language has more to map sound onto, not less.</li>' +
+    '<li>Watch the question behind the question: parents are usually asking whether their child will be left out. Full access at home is the protective factor.</li>' +
+    '</ul>' +
+    'Clinical decisions about implant candidacy belong with your care team. The vault keeps the research; people keep the judgment.' +
+    '<span class="cite">Grounded in: vault notes on CI outcomes and bimodal bilingualism.</span>';
+
+  var crpdAnswer =
+    'Your child has rights with teeth, grounded in the UN Convention on the Rights of Persons with Disabilities (CRPD):' +
+    '<ul>' +
+    '<li>Article 24: an inclusive education system at all levels, with the language the learner uses, including sign language.</li>' +
+    '<li>Articles 9, 21, and 30: accessibility, access to information and communication, and participation in cultural life. Bias shows up here as a rights issue, not a preference issue.</li>' +
+    '<li>Deaf-led organizations to know: Gallaudet University, the Clerc Center, VL2 (Visual Language and Visual Learning), your state School for the Deaf, LEAD-K, ASDC, NAD, and WFD.</li>' +
+    '</ul>' +
+    'In the live system, an answer like this links straight to the notes and the sources behind them.' +
+    '<span class="cite">Grounded in: vault notes on CRPD Articles 9, 21, 24, 30 and Deaf-led organizations.</span>';
+
+  var fallbackAnswer =
+    'In the live system, a question reaches the whole vault (1,300+ notes), the model sees only the passages that matter, and the answer cites the notes behind it.' +
+    '<ul>' +
+    '<li>This static preview carries four full answer paths: safety and crisis, language deprivation, sign language and cochlear implants, and CRPD rights.</li>' +
+    '<li>Try one of the example questions below, or ask about early access, school rights, or safety.</li>' +
+    '</ul>' +
+    '<span class="cite">Preview note: answers here are hand written from the vault\'s themes. The live assistant writes them from the notes themselves.</span>';
+
+  function route(q) {
+    var i, crisis = false;
+    for (i = 0; i < CRISIS_PATTERNS.length; i++) {
+      if (CRISIS_PATTERNS[i].test(q)) { crisis = true; break; }
+    }
+    if (crisis) return crisisAnswer;
+    if (/depriv/i.test(q) || /delay(ed)? (in )?(speech|language)/i.test(q) || /not (talk|speak)ing/i.test(q)) return deprivationAnswer;
+    if (/\b(asl|sign(ing| language)?)\b/i.test(q) || /\bci\b/i.test(q) || /implant/i.test(q) || /cochlear/i.test(q)) return aslCiAnswer;
+    if (/crpd/i.test(q) || /right(s)?\b/i.test(q) || /school/i.test(q) || /\biep\b/i.test(q) || /\b504\b/.test(q) || /\blead-?k\b/i.test(q)) return crpdAnswer;
+    return fallbackAnswer;
+  }
+
+  function addMessage(text, who) {
+    var msg = document.createElement('div');
+    msg.className = 'message ' + who;
+    var av = document.createElement('div');
+    av.className = 'avatar';
+    av.textContent = who === 'parent' ? 'P' : 'A';
+    var content = document.createElement('div');
+    content.className = 'message-content';
+    content.innerHTML = text;
+    msg.appendChild(av);
+    msg.appendChild(content);
+    transcript.appendChild(msg);
+    transcript.scrollTop = transcript.scrollHeight;
+  }
+
+  function renderMarkdownLite(text) {
+    var el = document.createElement('div');
+    var escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    escaped = escaped.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+    escaped = escaped.replace(/^# (.+)$/gm, '<b>$1</b>');
+    escaped = escaped.replace(/^## (.+)$/gm, '<b>$1</b>');
+    escaped = escaped.replace(/^[-*] (.+)$/gm, '&bull; $1');
+    escaped = escaped.replace(/\n/g, '<br>');
+    el.innerHTML = escaped;
+    return el.innerHTML;
+  }
+
+  function showTyping() {
+    var msg = document.createElement('div');
+    msg.className = 'message advisor';
+    msg.id = 'typing';
+    var av = document.createElement('div'); av.className = 'avatar'; av.textContent = 'A';
+    var content = document.createElement('div');
+    content.className = 'message-content';
+    content.innerHTML = '<span style="color:#64748b;font-family:JetBrains Mono,monospace;font-size:0.8125rem">searching the vault...</span>';
+    msg.appendChild(av); msg.appendChild(content);
+    transcript.appendChild(msg);
+    transcript.scrollTop = transcript.scrollHeight;
+  }
+
+  function renderCitations(citations) {
+    // Build citation rows: title, and when the answer came from a paper,
+    // a clickable link to the DOI so the reader can go read the source.
+    var rows = '';
+    citations.forEach(function (c) {
+      var title = String(c.title || c.source || 'vault note');
+      var link = c.url || (c.doi ? ('https://doi.org/' + c.doi) : '');
+      if (link) {
+        rows += '<li>' + escapeHtml(title) + ' <a class="doi-link" href="' + escapeHtml(link) +
+          '" target="_blank" rel="noopener noreferrer">read the paper</a></li>';
+      } else {
+        rows += '<li>' + escapeHtml(title) + '</li>';
+      }
+    });
+    var head = (citations.length === 1) ? 'Cited from the vault:' : 'Cited from the vault (' + citations.length + ' sources):';
+    return '<div class="cites"><span class="cite-head">' + head + '</span><ul>' + rows + '</ul></div>';
+  }
+
+  function escapeHtml(text) {
+    var div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
+  }
+
+  function ask(q) {
+    if (!q) return;
+    addMessage(q, 'parent');
+    input.value = '';
+    showTyping();
+
+    // Live path: real grounded answer from the vault (learnwithclay.ai hosts
+    // the same assistant as the main site). Crisis handling runs server-side
+    // before the model, and the answer cites the notes it came from.
+    fetch('https://learnwithclay.ai/api/parent/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: q.slice(0, 500) })
+    }).then(function (r) {
+      return r.json().then(function (data) { return { ok: r.ok, data: data }; });
+    }).then(function (out) {
+      var t = document.getElementById('typing');
+      if (t) t.remove();
+      if (out.ok && out.data && out.data.answer) {
+        var html = renderMarkdownLite(out.data.answer);
+        if (out.data.citations && out.data.citations.length) {
+          html += renderCitations(out.data.citations);
+        } else if (out.data.sources && out.data.sources.length) {
+          html += '<span class="cite">Answered from ' + out.data.sources.length + ' vault passages.</span>';
+        }
+        addMessage(html, 'advisor');
+      } else {
+        var err = (out.data && out.data.error) ? out.data.error : 'The advisor could not be reached.';
+        addMessage(err + '<br><br>' + route(q), 'advisor');
+      }
+    }).catch(function () {
+      var t = document.getElementById('typing');
+      if (t) t.remove();
+      addMessage('The live advisor could not be reached, so this is the preview answer.<br><br>' + route(q), 'advisor');
+    });
+  }
+
+  sendBtn.addEventListener('click', function () { ask(input.value.trim()); });
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') ask(input.value.trim());
+  });
+  document.querySelectorAll('.chip').forEach(function (chip) {
+    chip.addEventListener('click', function () { ask(chip.textContent); });
+  });
+
+  addMessage('Ask me anything about raising a Deaf or hard of hearing child. I answer from the vault, and I cite where answers come from.', 'advisor');
+  addMessage('Safety note: if your question suggests a crisis, I put crisis resources first, before anything else.', 'advisor');
+})();
+</script>
+</body>
+</html>
