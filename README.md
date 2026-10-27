@@ -15,6 +15,13 @@ resources first.
 
 Then open http://localhost:8080.
 
+## Contributing
+
+Read the [Code of Conduct](CODE_OF_CONDUCT.md) before opening an issue or a pull
+request. It is a Contributor Covenant 2.1 document with project-specific rules on
+grounding answers in cited sources, Deaf-centered framing, keeping crisis handling
+intact, and accessibility in how we work.
+
 ## Deploy
 
 Netlify project `learnwithclayparentadvisor`. Publish directory is the repo root;
