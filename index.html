@@ -498,16 +498,16 @@
   </div>
   <div class="steps inset" id="hwSteps" role="tablist" aria-label="The four steps">
     <button class="hw-step" type="button" role="tab" aria-selected="true" data-step="0">
-      <span class="num">1</span><span><span class="name">Curate</span><span class="sum">read first</span></span>
+      <span class="num">1</span><span><span class="name">Curate</span><span class="sum">Read First</span></span>
     </button>
     <button class="hw-step" type="button" role="tab" aria-selected="false" data-step="1">
-      <span class="num">2</span><span><span class="name">Connect</span><span class="sum">one question, whole vault</span></span>
+      <span class="num">2</span><span><span class="name">Connect</span><span class="sum">Questions are connected to the Vault</span></span>
     </button>
     <button class="hw-step" type="button" role="tab" aria-selected="false" data-step="2">
-      <span class="num">3</span><span><span class="name">Retrieve</span><span class="sum">right passages only</span></span>
+      <span class="num">3</span><span><span class="name">Retrieve</span><span class="sum">Grounded Sources Retrieved</span></span>
     </button>
     <button class="hw-step" type="button" role="tab" aria-selected="false" data-step="3">
-      <span class="num">4</span><span><span class="name">Answer</span><span class="sum">cited, human expert</span></span>
+      <span class="num">4</span><span><span class="name">Answer</span><span class="sum">Cited, Human Expert</span></span>
     </button>
   </div>
   <div id="hwDetail" class="inset" aria-live="polite"></div>
@@ -1341,13 +1341,13 @@
   }
   /* how it works window */
   var STEPS = [
-    { name: 'Curate', sum: 'read first',
+    { name: 'Curate', sum: 'Read First',
       body: 'People who know the field write it. Nothing goes in until it is read. Written and checked by hand.' },
-    { name: 'Connect', sum: 'one question, whole vault',
+    { name: 'Connect', sum: 'Questions are connected to the Vault',
       body: 'One question reaches the whole vault. Notes are written the way families type. The vault stays on your machines.' },
-    { name: 'Retrieve', sum: 'right passages only',
+    { name: 'Retrieve', sum: 'Grounded Sources Retrieved',
       body: 'A question pulls out the right passages. The model sees nothing else. A silent vault gets an honest answer.' },
-    { name: 'Answer', sum: 'cited, human expert',
+    { name: 'Answer', sum: 'Cited, Human Expert',
       body: 'Replies cite the notes behind them. Clinical questions go to a person. Safety paths fire before the model. A human is always the expert.' }
   ];
   var hwDetail = $('#hwDetail');
