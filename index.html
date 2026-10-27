@@ -86,6 +86,19 @@
   }
   .window.is-hidden { display: none !important; }
   .window.is-max { box-shadow: 2px 2px 0 #000; }
+  .window.is-sized { overflow: hidden; }
+  .window.is-sized .list,
+  .window.is-sized .transcript { flex: 1 1 auto; height: auto; min-height: 90px; }
+  .rz { position: absolute; z-index: 6; }
+  .rz-e { top: 0; right: 0; width: 6px; height: 100%; cursor: ew-resize; }
+  .rz-s { left: 0; bottom: 0; height: 6px; width: 100%; cursor: ns-resize; }
+  .rz-se {
+    right: 1px; bottom: 1px; width: 16px; height: 16px; cursor: nwse-resize;
+    background-image: repeating-linear-gradient(-45deg, #8a8a8a 0 1px, transparent 1px 4px);
+    background-clip: content-box;
+    padding: 2px;
+  }
+  .rz-se:hover, .rz-e:hover, .rz-s:hover { background-color: rgba(0,0,0,.08); }
   .titlebar {
     background: linear-gradient(90deg, var(--title-a), var(--title-b));
     color: #fff; font-weight: bold;
@@ -345,6 +358,7 @@
   @media (max-width: 820px) {
     .window { position: static !important; width: auto !important; margin: 8px; }
     .window.is-max { box-shadow: 1px 1px 0 #000; }
+    .rz { display: none; }
     #buddylist .list { height: 190px; }
     #imwin .transcript { height: 260px; }
     #credit { display: none; }
@@ -352,6 +366,7 @@
     .task-item { flex: 1 1 0; font-size: 10px; padding: 3px 4px; }
     #startmenu { left: 4px; right: 4px; width: auto; }
   }
+  .window.is-max .rz { display: none; }
   @media print {
     body { background: #fff; }
     #taskbar, #credit, #signon, #startmenu, #modal, #toast,
@@ -444,6 +459,9 @@
     A knowledge base your experts control, and the assistant that answers out of it.
     Click a buddy in <b>How It Works</b> for info. IM <b>VaultAdvisor</b> to ask a question.
   </div>
+  <span class="rz rz-e" data-dir="e" aria-hidden="true"></span>
+  <span class="rz rz-s" data-dir="s" aria-hidden="true"></span>
+  <span class="rz rz-se" data-dir="se" aria-hidden="true"></span>
   <div class="foot-btns">
     <button class="btn3d" id="setupBtn" type="button" title="Open preferences">Setup</button>
     <button class="btn3d" id="imBtn" type="button" style="font-weight:bold;" title="Open the Instant Message window">IM</button>
@@ -485,6 +503,9 @@
     <input type="text" id="chatInput" placeholder="Ask a question the way you would type it..." aria-label="Ask the Advisor" autocomplete="off">
     <button class="btn3d" id="sendBtn" type="button">Send</button>
   </div>
+  <span class="rz rz-e" data-dir="e" aria-hidden="true"></span>
+  <span class="rz rz-s" data-dir="s" aria-hidden="true"></span>
+  <span class="rz rz-se" data-dir="se" aria-hidden="true"></span>
   <div class="chips inset">
     <span class="lbl">People are IMing about:</span><br>
     <button class="chip" type="button">Will sign language stop my child from learning to speak?</button>
@@ -881,7 +902,7 @@
     if (state === 'closed') {
       el.classList.add('is-hidden');
       if (btn) btn.classList.add('is-hidden');
-      el.classList.remove('is-max', 'is-blur');
+      el.classList.remove('is-max', 'is-blur', 'is-sized');
       el.style.left = ''; el.style.top = ''; el.style.width = ''; el.style.height = '';
       winState[id] = 'closed';
       updateTaskbar();
@@ -901,6 +922,7 @@
           left: el.style.left, top: el.style.top, width: el.style.width, height: el.style.height
         });
         el.classList.add('is-max');
+        el.classList.remove('is-sized');
         el.style.left = '6px';
         el.style.top = '6px';
         el.style.width = Math.max(280, window.innerWidth - 14) + 'px';
@@ -914,6 +936,7 @@
         el.classList.remove('is-max');
         el.style.left = r.left || ''; el.style.top = r.top || '';
         el.style.width = r.width || ''; el.style.height = r.height || '';
+        if (r.width || r.height) el.classList.add('is-sized');
       }
       winState[id] = 'open';
     }
@@ -1014,6 +1037,56 @@
     bar.addEventListener('pointercancel', end);
   }
   $$('.window').forEach(makeDraggable);
+
+  /* resize from the right edge, bottom edge, and bottom right corner */
+  function makeResizable(win) {
+    $$('.rz', win).forEach(function (handle) {
+      handle.addEventListener('pointerdown', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (window.innerWidth <= 820) return;
+        if (win.classList.contains('is-max')) return;
+        var dir = handle.getAttribute('data-dir') || 'se';
+        var rect = win.getBoundingClientRect();
+        var w0 = rect.width, h0 = rect.height;
+        var limitW = window.innerWidth - rect.left - 6;
+        var limitH = window.innerHeight - rect.top - 36;
+        win.classList.add('is-sized');
+        win.style.left = rect.left + 'px';
+        win.style.top = rect.top + 'px';
+        win.style.width = w0 + 'px';
+        win.style.height = h0 + 'px';
+        focusWin(win.id);
+        try { handle.setPointerCapture(e.pointerId); } catch (err) {}
+        document.body.style.userSelect = 'none';
+        function move(ev) {
+          if (dir.indexOf('e') > -1) {
+            var w = Math.max(230, Math.min(limitW, w0 + (ev.clientX - e.clientX)));
+            win.style.width = w + 'px';
+          }
+          if (dir.indexOf('s') > -1) {
+            var h = Math.max(170, Math.min(limitH, h0 + (ev.clientY - e.clientY)));
+            win.style.height = h + 'px';
+          }
+        }
+        function end() {
+          handle.removeEventListener('pointermove', move);
+          handle.removeEventListener('pointerup', end);
+          handle.removeEventListener('pointercancel', end);
+          document.body.style.userSelect = '';
+        }
+        handle.addEventListener('pointermove', move);
+        handle.addEventListener('pointerup', end);
+        handle.addEventListener('pointercancel', end);
+      });
+    });
+    var bar = win.querySelector('.titlebar');
+    bar.addEventListener('dblclick', function (e) {
+      if (e.target.closest('.tb-btn')) return;
+      setWin(win.id, winState[win.id] === 'max' ? 'open' : 'max');
+    });
+  }
+  $$('.window').forEach(makeResizable);
 
   window.addEventListener('resize', function () {
     $$('.window.is-max').forEach(function (el) {
