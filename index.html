@@ -1361,8 +1361,7 @@
       b.setAttribute('tabindex', n === idx ? '0' : '-1');
     });
     var s = STEPS[idx];
-    hwDetail.innerHTML = '<div class="bi-head">STEP ' + (idx + 1) + ': ' + s.name + '</div>' +
-      s.body + '<div style="margin-top:6px;color:#666;font-style:italic;">' + s.sum + '</div>';
+    hwDetail.innerHTML = '<div class="bi-head">STEP ' + (idx + 1) + ': ' + s.name + '</div>' + s.body;
     if (focusRow) {
       var row = $('.hw-step[data-step="' + idx + '"]');
       if (row) row.focus();
