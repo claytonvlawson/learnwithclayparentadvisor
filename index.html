@@ -3,278 +3,1417 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Parent Advisor: Vault Preview</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<meta name="description" content="Parent Advisor AIM Edition, a preview of a knowledge base your experts control and the assistant that answers out of it.">
+<title>Parent Advisor: AIM Edition</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23008080'/%3E%3Cg fill='%23ffd700' stroke='%23000' stroke-width='0.5'%3E%3Ccircle cx='9.5' cy='2.5' r='1.9'/%3E%3Cpath d='M8.8 4.2 L6.5 7.5 L4.5 6.5 L6 8.5 L4 12.5 L5.5 13.5 L7.2 9.8 L9 12 L8 14.5 L9.6 15.2 L11 11.8 L9.2 9.4 L10.8 7.2 L13.5 8.5 L14 7 L11 5.6 Z'/%3E%3C/g%3E%3C/svg%3E">
 <style>
   :root {
-    --bg: #020617;
-    --fg: #f1f5f9;
-    --muted: #64748b;
-    --accent: #22d3ee;
-    --emerald: #34d399;
-    --violet: #a78bfa;
-    --rose: #fb7185;
-    --card: rgba(15, 23, 42, 0.8);
-    --border: rgba(30, 41, 59, 0.5);
+    --desktop: #008080;
+    --chrome: #c0c0c0;
+    --chrome-hi: #dfdfdf;
+    --chrome-lo: #404040;
+    --title-a: #000080;
+    --title-b: #1084d0;
+    --aim-blue: #0000cc;
+    --aim-red: #cc0000;
+    --aim-yellow: #ffd700;
+    --text-size: 11px;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
   body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    background: var(--bg);
-    color: var(--fg);
-    min-height: 100vh;
-    padding: 2rem;
-    line-height: 1.6;
+    font-family: Tahoma, 'MS Sans Serif', Geneva, Verdana, sans-serif;
+    font-size: 11px;
+    background: var(--desktop);
+    color: #000;
+    overflow-x: hidden;
   }
-  .wrap { max-width: 860px; margin: 0 auto; }
-  .header { margin-bottom: 2rem; }
-  .header h1 {
-    font-size: 1.875rem; font-weight: 700; letter-spacing: -0.025em; margin-bottom: 0.5rem;
-  }
-  .header p { color: var(--muted); font-size: 0.875rem; font-family: 'JetBrains Mono', monospace; }
-  .pulse-dot {
-    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-    background: var(--emerald); margin-right: 0.5rem; vertical-align: middle;
-    animation: pulse 2s infinite;
-  }
-  @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.5); }
-    70% { box-shadow: 0 0 0 8px rgba(52, 211, 153, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
-  }
-  .badge {
-    display: inline-block; font-size: 0.625rem; padding: 0.125rem 0.5rem;
-    border-radius: 999px; font-family: 'JetBrains Mono', monospace;
-    background: rgba(6, 78, 59, 0.6); color: var(--emerald); border: 1px solid var(--emerald);
-  }
-  .section-head {
-    display: flex; align-items: center; gap: 0.5rem;
-    font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem;
-  }
-  .section { margin-bottom: 2.5rem; }
-  .card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1.5rem;
-  }
-  /* Steps */
-  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; }
-  .step {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 0.75rem; padding: 1rem; cursor: pointer;
-    transition: border-color 0.2s, transform 0.2s;
-  }
-  .step:hover { transform: translateY(-2px); }
-  .step.active { border-color: var(--accent); }
-  .step .num {
-    font-family: 'JetBrains Mono', monospace; font-size: 0.625rem;
-    color: var(--accent); letter-spacing: 0.1em; display: block; margin-bottom: 0.5rem;
-  }
-  .step h3 { font-size: 0.9375rem; font-weight: 600; margin-bottom: 0.5rem; }
-  .step p { font-size: 0.75rem; color: var(--muted); line-height: 1.5; }
-  .diagram { margin-top: 1.25rem; text-align: center; }
-  .diagram text {
-    font-family: 'JetBrains Mono', monospace; fill: var(--muted); font-size: 11px;
-  }
-  .diagram text.on { fill: var(--accent); font-weight: 600; }
-  /* Chat */
-  .chat-container {
-    height: 420px; overflow-y: auto; margin-bottom: 1rem; padding-right: 1rem;
-  }
-  .message { margin-bottom: 1rem; max-width: 90%; display: flex; gap: 0.5rem; }
-  .parent { margin-left: auto; flex-direction: row-reverse; }
-  .advisor { margin-right: auto; }
-  .avatar {
-    width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
-    background: var(--accent); color: var(--bg);
-    font-size: 0.6875rem; font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'JetBrains Mono', monospace;
-  }
-  .parent .avatar { background: var(--violet); }
-  .message-content {
-    padding: 0.75rem 1rem; border-radius: 1rem; font-size: 0.875rem; line-height: 1.55;
-  }
-  .parent .message-content {
-    background: var(--violet); color: #0b0616; font-weight: 500;
-    border-radius: 1rem 1rem 0.25rem 1rem;
-  }
-  .advisor .message-content {
-    background: var(--card); color: var(--fg);
-    border: 1px solid var(--border);
-    border-radius: 1rem 1rem 1rem 0.25rem;
-  }
-  .advisor .message-content .cite {
-    display: block; margin-top: 0.6rem; font-size: 0.6875rem;
-    color: var(--accent); font-family: 'JetBrains Mono', monospace;
-  }
-  .message-content ul { padding-left: 1.1rem; margin: 0.4rem 0; }
-  .message-content strong { color: var(--rose); }
-  .form-control { display: flex; gap: 0.5rem; }
-  .form-control input {
-    flex: 1; padding: 0.65rem 0.85rem;
-    border: 1px solid var(--border); border-radius: 0.5rem;
-    background: var(--bg); color: var(--fg);
-    font-family: inherit; font-size: 0.875rem;
-  }
-  .form-control input:focus { outline: none; border-color: var(--accent); }
-  .send-btn {
-    padding: 0.65rem 1.1rem; background: var(--accent); color: var(--bg);
-    border: none; border-radius: 0.5rem; font-family: inherit;
-    font-size: 0.875rem; font-weight: 600; cursor: pointer; white-space: nowrap;
-  }
-  .send-btn:hover { opacity: 0.9; }
-  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
-  .chip {
-    background: transparent; border: 1px solid var(--border); color: var(--muted);
-    border-radius: 999px; padding: 0.3rem 0.85rem; font-size: 0.75rem;
-    font-family: inherit; cursor: pointer;
-  }
-  .chip:hover { border-color: var(--accent); color: var(--accent); }
-  /* CTAs */
-  .ctas { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem; }
-  .cta {
-    display: inline-block; padding: 0.85rem 1.5rem; border-radius: 0.5rem;
-    font-weight: 600; font-size: 0.9375rem; text-decoration: none;
-  }
-  .cta-primary { background: var(--emerald); color: #02150d; }
-  .cta-secondary {
-    border: 1px solid var(--accent); color: var(--accent);
-  }
-  .footer {
-    margin-top: 3rem; padding-top: 1.25rem; border-top: 1px solid var(--border);
-    font-size: 0.75rem; color: var(--muted); font-family: 'JetBrains Mono', monospace;
-    text-align: center;
-  }
-  .cites { margin-top: 0.6rem; border-top: 1px solid var(--border); padding-top: 0.5rem; }
-  .cites .cite-head {
-    display: block; font-size: 0.6875rem; color: var(--accent);
-    font-family: 'JetBrains Mono', monospace; margin-bottom: 0.35rem;
-  }
-  .cites ul { list-style: none; padding: 0; margin: 0; }
-  .cites li { font-size: 0.75rem; color: var(--muted); margin-bottom: 0.3rem; line-height: 1.45; }
-  .cites a.doi-link {
-    color: var(--accent); text-decoration: none; border-bottom: 1px dotted var(--accent);
-  }
-  .cites a.doi-link:hover { color: var(--emerald); border-bottom-color: var(--emerald); }
+  body.large { --text-size: 13px; }
+  button { font-family: inherit; font-size: inherit; color: #000; }
+  a { color: var(--aim-blue); }
+  :focus-visible { outline: 2px dotted #000; outline-offset: 1px; }
 
-  @media (max-width: 700px) {
-    body { padding: 1rem; }
-    .steps { grid-template-columns: repeat(2, 1fr); }
-    .chat-container { height: 320px; }
+  .outset {
+    background: var(--chrome);
+    border: 2px solid;
+    border-color: var(--chrome-hi) var(--chrome-lo) var(--chrome-lo) var(--chrome-hi);
+    box-shadow: 1px 1px 0 #000;
+  }
+  .inset {
+    background: #fff;
+    border: 2px solid;
+    border-color: var(--chrome-lo) var(--chrome-hi) var(--chrome-hi) var(--chrome-lo);
+  }
+  .btn3d {
+    background: var(--chrome);
+    border: 2px solid;
+    border-color: #fff var(--chrome-lo) var(--chrome-lo) #fff;
+    padding: 3px 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .btn3d:hover { background: #d4d4d4; }
+  .btn3d:active { border-color: var(--chrome-lo) #fff #fff var(--chrome-lo); }
+  .btn3d[disabled] { color: #808080; cursor: default; }
+
+  /* ---------- Sign-on dialog ---------- */
+  #signon {
+    position: fixed; inset: 0; z-index: 1000;
+    background: var(--desktop);
+    display: flex; align-items: center; justify-content: center;
+  }
+  #signon .dialog { width: 300px; }
+  #signon .body { padding: 14px; }
+  #signon .brand {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+    background: var(--title-a); padding: 6px 8px;
+  }
+  #signon .brand .word { font-weight: bold; font-size: 20px; color: #fff; font-style: italic; }
+  #signon .brand .word span { color: var(--aim-yellow); }
+  #signon label { display: block; margin: 8px 0 2px; font-weight: bold; }
+  #signon input {
+    width: 100%; padding: 3px 4px; font-family: inherit; font-size: 11px;
+    border: 2px solid; border-color: var(--chrome-lo) var(--chrome-hi) var(--chrome-hi) var(--chrome-lo);
+  }
+  #signon .row { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+  #signon .ver { color: #333; }
+  #signon .pitch { margin-top: 10px; color: #222; line-height: 1.45; }
+
+  /* ---------- Windows ---------- */
+  .window {
+    position: absolute;
+    display: flex; flex-direction: column;
+  }
+  .window.is-hidden { display: none !important; }
+  .window.is-max { box-shadow: 2px 2px 0 #000; }
+  .titlebar {
+    background: linear-gradient(90deg, var(--title-a), var(--title-b));
+    color: #fff; font-weight: bold;
+    padding: 3px 2px 3px 6px;
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: move;
+    user-select: none;
+    touch-action: none;
+  }
+  .window.is-blur .titlebar { background: linear-gradient(90deg, #808080, #b0b0b0); }
+  .titlebar .tb-title { display: flex; align-items: center; gap: 5px; }
+  .tb-btns { display: flex; gap: 2px; }
+  .tb-btn {
+    width: 16px; height: 14px; line-height: 10px; text-align: center;
+    font-size: 9px; font-weight: bold;
+    background: var(--chrome); color: #000;
+    border: 1px solid; border-color: #fff var(--chrome-lo) var(--chrome-lo) #fff;
+    cursor: pointer; padding: 0;
+  }
+  .tb-btn:hover { background: #d4d4d4; }
+  .tb-btn:active { border-color: var(--chrome-lo) #fff #fff var(--chrome-lo); }
+  .menubar {
+    display: flex; gap: 2px; padding: 2px 4px;
+    border-bottom: 1px solid #808080;
+    position: relative;
+  }
+  .menubar > button {
+    padding: 1px 6px; cursor: pointer; background: none; border: 0;
+  }
+  .menubar > button:hover, .menubar > button[aria-expanded="true"] { background: var(--title-a); color: #fff; }
+  .menubar u { text-decoration: underline; }
+  .menu {
+    position: absolute; top: 100%; left: 0; z-index: 60;
+    min-width: 210px; padding: 2px;
+    background: var(--chrome);
+    border: 2px solid; border-color: #fff var(--chrome-lo) var(--chrome-lo) #fff;
+    box-shadow: 2px 2px 0 rgba(0,0,0,.45);
+    display: none;
+  }
+  .menu.open { display: block; }
+  .menu button {
+    display: flex; justify-content: space-between; gap: 14px; width: 100%;
+    text-align: left; padding: 4px 18px 4px 20px; background: none; border: 0; cursor: pointer;
+    position: relative;
+  }
+  .menu button:hover, .menu button:focus { background: var(--title-a); color: #fff; outline: none; }
+  .menu .check { visibility: hidden; position: absolute; left: 6px; }
+  .menu button[aria-checked="true"] .check { visibility: visible; }
+  .menu .sep { height: 0; border-top: 1px solid #808080; border-bottom: 1px solid #fff; margin: 3px 2px; }
+
+  /* ---------- Buddy list window ---------- */
+  #buddylist { left: 18px; top: 18px; width: 240px; }
+  #buddylist .sn-bar {
+    margin: 4px; padding: 2px 4px;
+    display: flex; align-items: center; justify-content: space-between; gap: 4px;
+  }
+  #buddylist .sn-bar .sn-pick {
+    background: none; border: 0; cursor: pointer; padding: 0 2px; font-size: 11px;
+  }
+  #buddylist .sn-bar .sn-pick:hover { background: var(--title-a); color: #fff; }
+  #buddylist .list {
+    margin: 0 4px 4px; padding: 3px;
+    height: 300px; overflow-y: auto;
+    font-size: 11px;
+  }
+  .group-head {
+    display: block; width: 100%; text-align: left;
+    font-weight: bold; cursor: pointer; padding: 2px 0; user-select: none;
+    background: none; border: 0; font-size: 11px;
+  }
+  .group-head:hover { background: var(--title-a); color: #fff; }
+  .group-head .arrow { display: inline-block; width: 10px; }
+  .buddy {
+    display: flex; align-items: center; gap: 5px;
+    padding: 1px 2px 1px 20px; cursor: pointer; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+    background: none; border: 0; width: 100%; text-align: left; font-size: 11px;
+  }
+  .buddy.is-hidden { display: none; }
+  .buddy:hover, .buddy:focus-visible { background: var(--title-a); color: #fff; }
+  .buddy:hover .sn-name, .buddy:focus-visible .sn-name { color: #fff; }
+  .buddy:hover .sn-note, .buddy:focus-visible .sn-note { color: #ddd; }
+  .buddy .sn-name { color: #000; }
+  .buddy .sn-note { color: #666; font-style: italic; }
+  .buddy svg { flex-shrink: 0; }
+  #buddyinfo {
+    margin: 0 4px 4px; padding: 6px;
+    height: 130px; overflow-y: auto;
+    line-height: 1.45;
+  }
+  #buddyinfo .bi-head { font-weight: bold; color: var(--aim-blue); margin-bottom: 3px; }
+  #buddyinfo a { color: var(--aim-blue); }
+  #buddyinfo button.linkish {
+    background: none; border: 0; padding: 0; color: var(--aim-blue);
+    text-decoration: underline; cursor: pointer; font-size: 11px;
+  }
+  #buddylist .foot-btns { display: flex; gap: 3px; padding: 0 4px 5px; }
+  #buddylist .foot-btns .btn3d { flex: 1; padding: 2px 0; text-align: center; }
+
+  /* ---------- IM window ---------- */
+  #imwin { left: 278px; top: 48px; width: 560px; }
+  #imwin .transcript {
+    margin: 4px; padding: 4px 6px;
+    height: 330px; overflow-y: auto;
+    line-height: 1.5; font-size: var(--text-size);
+  }
+  .mline { margin-bottom: 8px; }
+  .who { font-weight: bold; }
+  .who-adv { color: var(--aim-red); }
+  .who-you { color: var(--aim-blue); }
+  .sys { color: #808080; font-style: italic; }
+  .mline ul { padding-left: 18px; margin: 3px 0; }
+  .mline strong, .mline b { color: #8b0000; }
+  .mline .cite {
+    display: block; margin-top: 5px; font-size: 10px;
+    color: #666; font-style: italic;
+  }
+  .cites { margin-top: 6px; border-top: 1px dotted #999; padding-top: 4px; }
+  .cites .cite-head { display: block; font-size: 10px; color: #666; font-style: italic; margin-bottom: 2px; }
+  .cites ul { list-style: none; padding: 0; margin: 0; }
+  .cites li { font-size: 10px; color: #333; margin-bottom: 2px; }
+  .cites a.doi-link { color: var(--aim-blue); }
+  #chatTranscript.hide-cites .cites, #chatTranscript.hide-cites .cite { display: none; }
+  #imwin .toolbar {
+    display: flex; align-items: center; gap: 2px;
+    margin: 0 4px; padding: 2px;
+  }
+  #imwin .toolbar .tbtn {
+    width: 22px; height: 20px; line-height: 16px; text-align: center;
+    background: var(--chrome);
+    border: 2px solid; border-color: #fff var(--chrome-lo) var(--chrome-lo) #fff;
+    cursor: pointer; font-size: 11px; font-weight: bold; padding: 0;
+  }
+  #imwin .toolbar .tbtn:active, #imwin .toolbar .tbtn[aria-pressed="true"] {
+    border-color: var(--chrome-lo) #fff #fff var(--chrome-lo);
+    background: #b0b0b0;
+  }
+  #imwin .toolbar .tbtn[disabled] { color: #999; cursor: default; }
+  #imwin .warnwrap {
+    margin-left: auto; display: flex; align-items: center; gap: 4px;
+  }
+  #imwin .warnmeter {
+    width: 60px; height: 10px; background: #fff;
+    border: 1px solid #808080; display: inline-block;
+  }
+  #imwin .warnmeter i { display: block; height: 100%; width: 0%; background: var(--aim-red); transition: width .2s; }
+  #imwin .inputrow { display: flex; gap: 4px; margin: 2px 4px 4px; }
+  #chatInput {
+    flex: 1; padding: 3px 5px; font-family: inherit; font-size: 11px;
+    border: 2px solid; border-color: var(--chrome-lo) var(--chrome-hi) var(--chrome-hi) var(--chrome-lo);
+  }
+  #chatInput:focus { outline: none; }
+  #sendBtn { font-weight: bold; padding: 3px 18px; }
+  #imwin .chips { margin: 0 4px 5px; padding: 3px 5px; line-height: 1.7; }
+  #imwin .chips .lbl { color: #444; font-weight: bold; }
+  #imwin .chips button.chip {
+    background: none; border: 0; padding: 0; margin-right: 10px;
+    color: var(--aim-blue); cursor: pointer; font-size: 11px; text-decoration: underline;
+  }
+  #imwin .chips button.chip:hover { color: var(--aim-red); }
+
+  /* ---------- Taskbar ---------- */
+  #taskbar {
+    position: fixed; left: 0; right: 0; bottom: 0; height: 30px; z-index: 900;
+    background: var(--chrome);
+    border-top: 2px solid; border-color: var(--chrome-hi);
+    display: flex; align-items: center; gap: 4px; padding: 2px 4px;
+  }
+  #startBtn { font-weight: bold; display: flex; align-items: center; gap: 4px; }
+  .task-item {
+    flex: 0 1 180px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+    padding: 3px 8px;
+    background: var(--chrome);
+    border: 2px solid; border-color: #fff var(--chrome-lo) var(--chrome-lo) #fff;
+    cursor: pointer; text-align: left;
+  }
+  .task-item.active { border-color: var(--chrome-lo) #fff #fff var(--chrome-lo); background: #b8b8b8; font-weight: bold; }
+  .task-item.is-hidden { display: none; }
+  #clock, #soundToggle {
+    padding: 3px 8px; background: var(--chrome); cursor: pointer;
+    border: 2px solid; border-color: var(--chrome-lo) var(--chrome-hi) var(--chrome-hi) var(--chrome-lo);
+  }
+  #clock { margin-left: auto; }
+  #clock:hover, #soundToggle:hover { background: #d4d4d4; }
+  #credit {
+    position: fixed; right: 8px; bottom: 36px; z-index: 800;
+    color: #fff; font-size: 10px; text-shadow: 1px 1px 0 #004040;
+    text-align: right; line-height: 1.5;
+  }
+  #credit a { color: #fff; text-decoration: underline; }
+  #credit a:hover { color: #ffff99; }
+
+  /* ---------- Start menu, dropdowns, modal, toast ---------- */
+  #startmenu {
+    position: fixed; left: 4px; bottom: 32px; z-index: 950;
+    width: 210px; padding: 2px;
+    background: var(--chrome);
+    border: 2px solid; border-color: #fff var(--chrome-lo) var(--chrome-lo) #fff;
+    box-shadow: 2px 2px 0 rgba(0,0,0,.45);
+    display: none;
+  }
+  #startmenu.open { display: block; }
+  #startmenu button {
+    display: flex; align-items: center; gap: 8px;
+    width: 100%; padding: 5px 10px; background: none; border: 0;
+    text-align: left; cursor: pointer; font-size: 11px;
+  }
+  #startmenu button:hover, #startmenu button:focus { background: var(--title-a); color: #fff; outline: none; }
+  #startmenu .sep { height: 0; border-top: 1px solid #808080; border-bottom: 1px solid #fff; margin: 3px 2px; }
+  #startmenu .ic { width: 14px; text-align: center; }
+
+  .dropdown {
+    position: absolute; z-index: 70; min-width: 170px; padding: 2px;
+    background: var(--chrome);
+    border: 2px solid; border-color: #fff var(--chrome-lo) var(--chrome-lo) #fff;
+    box-shadow: 2px 2px 0 rgba(0,0,0,.45);
+    display: none;
+  }
+  .dropdown.open { display: block; }
+  .dropdown button {
+    display: block; width: 100%; text-align: left; padding: 4px 10px;
+    background: none; border: 0; cursor: pointer; font-size: 11px;
+  }
+  .dropdown button:hover, .dropdown button:focus { background: var(--title-a); color: #fff; outline: none; }
+
+  #modal {
+    position: fixed; inset: 0; z-index: 1200;
+    background: rgba(0,32,32,.35);
+    display: none; align-items: center; justify-content: center; padding: 16px;
+  }
+  #modal.open { display: flex; }
+  #modal .dialog { width: 340px; max-width: 100%; }
+  #modal .body { padding: 12px 14px; line-height: 1.5; max-height: 60vh; overflow: auto; background: var(--chrome); }
+  #modal .body ul { padding-left: 18px; margin: 6px 0; }
+  #modal .body p + p { margin-top: 7px; }
+  #modal .foot { display: flex; justify-content: flex-end; gap: 6px; padding: 0 14px 12px; background: var(--chrome); }
+  #modal .pref-row { display: flex; align-items: center; gap: 7px; margin: 7px 0; }
+  #modal .pref-row label { cursor: pointer; }
+  #modal input[type="text"] {
+    width: 100%; padding: 3px 4px; font-family: inherit; font-size: 11px;
+    border: 2px solid; border-color: var(--chrome-lo) var(--chrome-hi) var(--chrome-hi) var(--chrome-lo);
+  }
+  #toast {
+    position: fixed; left: 50%; bottom: 46px; transform: translateX(-50%) translateY(8px);
+    z-index: 1300; padding: 5px 12px; background: #ffffe1; color: #000;
+    border: 1px solid #000; box-shadow: 2px 2px 0 rgba(0,0,0,.4);
+    opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s;
+    max-width: 80vw; text-align: center;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  @media (max-width: 820px) {
+    .window { position: static !important; width: auto !important; margin: 8px; }
+    .window.is-max { box-shadow: 1px 1px 0 #000; }
+    #buddylist .list { height: 190px; }
+    #imwin .transcript { height: 260px; }
+    #credit { display: none; }
+    #taskbar { gap: 2px; }
+    .task-item { flex: 1 1 0; font-size: 10px; padding: 3px 4px; }
+    #startmenu { left: 4px; right: 4px; width: auto; }
+  }
+  @media print {
+    body { background: #fff; }
+    #taskbar, #credit, #signon, #startmenu, #modal, #toast,
+    .titlebar, .menubar, .toolbar, .inputrow, .chips, #buddylist .foot-btns { display: none !important; }
+    .window { position: static !important; width: auto !important; border: 0; box-shadow: none; }
+    #imwin .transcript { height: auto; max-height: none; overflow: visible; border: 0; }
+    #buddylist { display: none; }
   }
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <div class="header">
-    <h1><span class="pulse-dot"></span>Parent Advisor</h1>
-    <p>A knowledge base your experts control, and the assistant that answers out of it. Preview derived from the vault (1,300+ notes).</p>
-  </div>
-
-  <div class="section">
-    <div class="section-head">How it works <span class="badge">4 STEPS</span></div>
-    <div class="steps">
-      <div class="step" data-step="1" id="step1">
-        <span class="num">STEP 1</span>
-        <h3>Curate</h3>
-        <p>People who know the field write it. Nothing goes in until it is read. Written and checked by hand.</p>
+<!-- ============ SIGN ON ============ -->
+<div id="signon">
+  <div class="dialog outset" role="dialog" aria-modal="true" aria-labelledby="signonTitle">
+    <div class="titlebar"><span class="tb-title" id="signonTitle">Sign On</span></div>
+    <div class="body">
+      <div class="brand">
+        <svg width="34" height="34" viewBox="0 0 16 16" aria-hidden="true"><g fill="#ffd700" stroke="#000" stroke-width="0.5"><circle cx="9.5" cy="2.5" r="1.9"/><path d="M8.8 4.2 L6.5 7.5 L4.5 6.5 L6 8.5 L4 12.5 L5.5 13.5 L7.2 9.8 L9 12 L8 14.5 L9.6 15.2 L11 11.8 L9.2 9.4 L10.8 7.2 L13.5 8.5 L14 7 L11 5.6 Z"/></g></svg>
+        <div class="word"><span>Parent Advisor</span> Online</div>
       </div>
-      <div class="step" data-step="2" id="step2">
-        <span class="num">STEP 2</span>
-        <h3>Connect</h3>
-        <p>One question reaches the whole vault. Notes are written the way families type. The vault stays on your machines.</p>
+      <label for="snInput">ScreenName</label>
+      <input id="snInput" value="VisitingParent" maxlength="16" autocomplete="off" spellcheck="false">
+      <label for="pwInput">Password</label>
+      <input id="pwInput" type="password" value="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" readonly aria-describedby="pwNote">
+      <span id="pwNote" class="sr-only">This preview does not use a password.</span>
+      <div class="row">
+        <span class="ver">Version: 5.9.3702</span>
+        <button class="btn3d" id="signOnBtn" style="font-weight:bold;padding:4px 22px;">Sign On</button>
       </div>
-      <div class="step" data-step="3" id="step3">
-        <span class="num">STEP 3</span>
-        <h3>Retrieve</h3>
-        <p>A question pulls out the right passages. The model sees nothing else. A silent vault gets an honest answer.</p>
-      </div>
-      <div class="step" data-step="4" id="step4">
-        <span class="num">STEP 4</span>
-        <h3>Answer</h3>
-        <p>Replies cite the notes behind them. Clinical questions go to a person. Safety paths fire before the model. A human is always the expert.</p>
-      </div>
-    </div>
-    <div class="diagram">
-      <svg width="100%" height="80" viewBox="0 0 720 80" xmlns="http://www.w3.org/2000/svg">
-        <line x1="70" y1="40" x2="650" y2="40" stroke="rgba(30,41,59,1)" stroke-width="2"/>
-        <circle id="d1" cx="90" cy="40" r="7" fill="#020617" stroke="#64748b" stroke-width="2"/>
-        <circle id="d2" cx="270" cy="40" r="7" fill="#020617" stroke="#64748b" stroke-width="2"/>
-        <circle id="d3" cx="450" cy="40" r="7" fill="#020617" stroke="#64748b" stroke-width="2"/>
-        <circle id="d4" cx="630" cy="40" r="7" fill="#020617" stroke="#64748b" stroke-width="2"/>
-        <text id="t1" x="90" y="20" text-anchor="middle">CURATE</text>
-        <text id="t2" x="270" y="20" text-anchor="middle">CONNECT</text>
-        <text id="t3" x="450" y="20" text-anchor="middle">RETRIEVE</text>
-        <text id="t4" x="630" y="20" text-anchor="middle">ANSWER</text>
-        <text id="s1" x="90" y="68" text-anchor="middle">read first</text>
-        <text id="s2" x="270" y="68" text-anchor="middle">one question, whole vault</text>
-        <text id="s3" x="450" y="68" text-anchor="middle">right passages only</text>
-        <text id="s4" x="630" y="68" text-anchor="middle">cited, human expert</text>
-      </svg>
+      <div class="pitch">A knowledge base your experts control, and the assistant that answers out of it. Preview derived from the vault (1,300+ notes).</div>
     </div>
   </div>
+</div>
 
-  <div class="section">
-    <div class="section-head">Ask the Advisor <span class="badge">PREVIEW</span></div>
-    <div class="card">
-      <div class="chat-container" id="chatTranscript"></div>
-      <div class="form-control">
-        <input type="text" id="chatInput" placeholder="Ask a question the way you would type it..." aria-label="Ask the Advisor">
-        <button class="send-btn" id="sendBtn">Ask</button>
-      </div>
-      <div class="chips">
-        <button class="chip">Will sign language stop my child from learning to speak?</button>
-        <button class="chip">What is language deprivation?</button>
-        <button class="chip">What rights does my Deaf child have at school?</button>
-      </div>
-    </div>
+<!-- ============ BUDDY LIST ============ -->
+<div class="window outset" id="buddylist" role="region" aria-label="Buddy List Window">
+  <div class="titlebar">
+    <span class="tb-title">Buddy List Window</span>
+    <span class="tb-btns">
+      <button class="tb-btn" type="button" data-win-act="min" data-win="buddylist" aria-label="Minimize Buddy List" title="Minimize">_</button>
+      <button class="tb-btn" type="button" data-win-act="max" data-win="buddylist" aria-label="Maximize Buddy List" title="Maximize">&#9633;</button>
+      <button class="tb-btn" type="button" data-win-act="close" data-win="buddylist" aria-label="Close Buddy List" title="Close">&#10005;</button>
+    </span>
   </div>
-
-  <div class="ctas">
-    <a class="cta cta-primary" href="https://calendly.com/clayton-learnwithclay">Request a scoping call</a>
-    <a class="cta cta-secondary" href="https://learnwithclay.ai">See the live assistant →</a>
+  <div class="menubar" data-menu="buddylist">
+    <button type="button" aria-haspopup="true" aria-expanded="false"><u>M</u>y AIM</button>
+    <button type="button" aria-haspopup="true" aria-expanded="false"><u>P</u>eople</button>
+    <button type="button" aria-haspopup="true" aria-expanded="false"><u>H</u>elp</button>
   </div>
-
-  <div class="footer">
-    A knowledge base your experts control, and the assistant that answers out of it &middot; Built by Clayton Lawson &middot; learnwithclay.ai
+  <div class="sn-bar inset">
+    <span><b>ScreenName:</b> <span id="snLabel">VisitingParent</span></span>
+    <button class="sn-pick" type="button" id="snPick" aria-haspopup="true" aria-expanded="false" aria-label="Screen name options" title="Screen name options">&#9660;</button>
   </div>
+  <div class="list inset" id="buddyListArea" aria-label="Buddies">
+    <button class="group-head" type="button" data-group="steps" aria-expanded="true"><span class="arrow">&#9660;</span> How It Works (4/4)</button>
+    <button class="buddy" type="button" data-buddy="curate" data-group="steps">
+      <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><g fill="#ffd700" stroke="#000" stroke-width="0.6"><circle cx="9.5" cy="2.5" r="1.9"/><path d="M8.8 4.2 L6.5 7.5 L4.5 6.5 L6 8.5 L4 12.5 L5.5 13.5 L7.2 9.8 L9 12 L8 14.5 L9.6 15.2 L11 11.8 L9.2 9.4 L10.8 7.2 L13.5 8.5 L14 7 L11 5.6 Z"/></g></svg>
+      <span class="sn-name">CurateStep</span>
+    </button>
+    <button class="buddy" type="button" data-buddy="connect" data-group="steps">
+      <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><g fill="#ffd700" stroke="#000" stroke-width="0.6"><circle cx="9.5" cy="2.5" r="1.9"/><path d="M8.8 4.2 L6.5 7.5 L4.5 6.5 L6 8.5 L4 12.5 L5.5 13.5 L7.2 9.8 L9 12 L8 14.5 L9.6 15.2 L11 11.8 L9.2 9.4 L10.8 7.2 L13.5 8.5 L14 7 L11 5.6 Z"/></g></svg>
+      <span class="sn-name">ConnectStep</span>
+    </button>
+    <button class="buddy" type="button" data-buddy="retrieve" data-group="steps">
+      <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><g fill="#ffd700" stroke="#000" stroke-width="0.6"><circle cx="9.5" cy="2.5" r="1.9"/><path d="M8.8 4.2 L6.5 7.5 L4.5 6.5 L6 8.5 L4 12.5 L5.5 13.5 L7.2 9.8 L9 12 L8 14.5 L9.6 15.2 L11 11.8 L9.2 9.4 L10.8 7.2 L13.5 8.5 L14 7 L11 5.6 Z"/></g></svg>
+      <span class="sn-name">RetrieveStep</span>
+    </button>
+    <button class="buddy" type="button" data-buddy="answer" data-group="steps">
+      <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><g fill="#ffd700" stroke="#000" stroke-width="0.6"><circle cx="9.5" cy="2.5" r="1.9"/><path d="M8.8 4.2 L6.5 7.5 L4.5 6.5 L6 8.5 L4 12.5 L5.5 13.5 L7.2 9.8 L9 12 L8 14.5 L9.6 15.2 L11 11.8 L9.2 9.4 L10.8 7.2 L13.5 8.5 L14 7 L11 5.6 Z"/></g></svg>
+      <span class="sn-name">AnswerStep</span>
+    </button>
+    <button class="group-head" type="button" data-group="talk" aria-expanded="true"><span class="arrow">&#9660;</span> Talk To Me (1/1)</button>
+    <button class="buddy" type="button" data-buddy="advisor" data-group="talk">
+      <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><g fill="#ffd700" stroke="#000" stroke-width="0.6"><circle cx="9.5" cy="2.5" r="1.9"/><path d="M8.8 4.2 L6.5 7.5 L4.5 6.5 L6 8.5 L4 12.5 L5.5 13.5 L7.2 9.8 L9 12 L8 14.5 L9.6 15.2 L11 11.8 L9.2 9.4 L10.8 7.2 L13.5 8.5 L14 7 L11 5.6 Z"/></g></svg>
+      <span class="sn-name"><b>VaultAdvisor</b></span> <span class="sn-note">(Online)</span>
+    </button>
+    <button class="group-head" type="button" data-group="resources" aria-expanded="true"><span class="arrow">&#9660;</span> Resources (2/2)</button>
+    <button class="buddy" type="button" data-buddy="call" data-group="resources">
+      <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><g fill="#ffd700" stroke="#000" stroke-width="0.6"><circle cx="9.5" cy="2.5" r="1.9"/><path d="M8.8 4.2 L6.5 7.5 L4.5 6.5 L6 8.5 L4 12.5 L5.5 13.5 L7.2 9.8 L9 12 L8 14.5 L9.6 15.2 L11 11.8 L9.2 9.4 L10.8 7.2 L13.5 8.5 L14 7 L11 5.6 Z"/></g></svg>
+      <span class="sn-name">ScopingCall</span>
+    </button>
+    <button class="buddy" type="button" data-buddy="live" data-group="resources">
+      <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><g fill="#ffd700" stroke="#000" stroke-width="0.6"><circle cx="9.5" cy="2.5" r="1.9"/><path d="M8.8 4.2 L6.5 7.5 L4.5 6.5 L6 8.5 L4 12.5 L5.5 13.5 L7.2 9.8 L9 12 L8 14.5 L9.6 15.2 L11 11.8 L9.2 9.4 L10.8 7.2 L13.5 8.5 L14 7 L11 5.6 Z"/></g></svg>
+      <span class="sn-name">LiveAssistant</span>
+    </button>
+  </div>
+  <div id="buddyinfo" class="inset" aria-live="polite">
+    <div class="bi-head">Welcome, VisitingParent</div>
+    A knowledge base your experts control, and the assistant that answers out of it.
+    Click a buddy in <b>How It Works</b> for info. IM <b>VaultAdvisor</b> to ask a question.
+  </div>
+  <div class="foot-btns">
+    <button class="btn3d" id="setupBtn" type="button" title="Open preferences">Setup</button>
+    <button class="btn3d" id="imBtn" type="button" style="font-weight:bold;" title="Open the Instant Message window">IM</button>
+    <button class="btn3d" id="infoBtn" type="button" title="About this preview">Info</button>
+  </div>
+</div>
 
+<!-- ============ IM WINDOW ============ -->
+<div class="window outset" id="imwin" role="region" aria-label="VaultAdvisor Instant Message">
+  <div class="titlebar">
+    <span class="tb-title">VaultAdvisor - Instant Message</span>
+    <span class="tb-btns">
+      <button class="tb-btn" type="button" data-win-act="min" data-win="imwin" aria-label="Minimize Instant Message" title="Minimize">_</button>
+      <button class="tb-btn" type="button" data-win-act="max" data-win="imwin" aria-label="Maximize Instant Message" title="Maximize">&#9633;</button>
+      <button class="tb-btn" type="button" data-win-act="close" data-win="imwin" aria-label="Close Instant Message" title="Close">&#10005;</button>
+    </span>
+  </div>
+  <div class="menubar" data-menu="im">
+    <button type="button" aria-haspopup="true" aria-expanded="false"><u>F</u>ile</button>
+    <button type="button" aria-haspopup="true" aria-expanded="false"><u>E</u>dit</button>
+    <button type="button" aria-haspopup="true" aria-expanded="false"><u>V</u>iew</button>
+    <button type="button" aria-haspopup="true" aria-expanded="false"><u>I</u>nsert</button>
+    <button type="button" aria-haspopup="true" aria-expanded="false"><u>P</u>eople</button>
+  </div>
+  <div class="transcript inset" id="chatTranscript" role="log" aria-live="polite" tabindex="0" aria-label="Conversation with VaultAdvisor"></div>
+  <div class="toolbar">
+    <button class="tbtn" type="button" title="Bold" aria-label="Bold" data-format="bold">B</button>
+    <button class="tbtn" type="button" title="Italic" aria-label="Italic" data-format="italic" style="font-style:italic;">I</button>
+    <button class="tbtn" type="button" title="Underline" aria-label="Underline" data-format="underline" style="text-decoration:underline;">U</button>
+    <button class="tbtn" type="button" id="smileyBtn" title="Smiley" aria-label="Insert a smiley">&#9786;</button>
+    <button class="tbtn" type="button" id="warnBtn" title="Send a warning" aria-label="Send a warning" style="color:#8b0000;">&#9888;</button>
+    <span class="warnwrap">
+      <span>Warn</span>
+      <span class="warnmeter" role="progressbar" aria-label="Warning level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></span>
+      <span id="warnPct">0%</span>
+    </span>
+  </div>
+  <div class="inputrow">
+    <input type="text" id="chatInput" placeholder="Ask a question the way you would type it..." aria-label="Ask the Advisor" autocomplete="off">
+    <button class="btn3d" id="sendBtn" type="button">Send</button>
+  </div>
+  <div class="chips inset">
+    <span class="lbl">People are IMing about:</span><br>
+    <button class="chip" type="button">Will sign language stop my child from learning to speak?</button>
+    <button class="chip" type="button">What is language deprivation?</button>
+    <button class="chip" type="button">What rights does my Deaf child have at school?</button>
+  </div>
+</div>
+
+<!-- ============ TASKBAR ============ -->
+<div id="taskbar">
+  <button class="btn3d" id="startBtn" type="button" aria-haspopup="true" aria-expanded="false">
+    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><g fill="#ffd700" stroke="#000" stroke-width="0.6"><circle cx="9.5" cy="2.5" r="1.9"/><path d="M8.8 4.2 L6.5 7.5 L4.5 6.5 L6 8.5 L4 12.5 L5.5 13.5 L7.2 9.8 L9 12 L8 14.5 L9.6 15.2 L11 11.8 L9.2 9.4 L10.8 7.2 L13.5 8.5 L14 7 L11 5.6 Z"/></g></svg>
+    Start
+  </button>
+  <button class="task-item" type="button" data-win="buddylist" aria-label="Buddy List Window">Buddy List Window</button>
+  <button class="task-item" type="button" data-win="imwin" aria-label="VaultAdvisor Instant Message">VaultAdvisor - Instant Message</button>
+  <button id="soundToggle" type="button" aria-pressed="true" title="Toggle sounds">&#128266; Sounds</button>
+  <button id="clock" type="button" title="Show the date, toggle 12 and 24 hour clock">--:--</button>
+</div>
+
+<div id="startmenu" role="menu" aria-label="Start menu"></div>
+
+<div id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<div id="credit">
+  A knowledge base your experts control, and the assistant that answers out of it<br>
+  Built by Clayton Lawson &middot; <a href="https://learnwithclay.ai" target="_blank" rel="noopener">learnwithclay.ai</a>
 </div>
 
 <script>
 (function () {
-  var transcript = document.getElementById('chatTranscript');
-  var input = document.getElementById('chatInput');
-  var sendBtn = document.getElementById('sendBtn');
+  'use strict';
 
-  // ---- Step diagram interaction ----
-  var colors = ['#22d3ee', '#34d399', '#a78bfa', '#fb7185'];
-  document.querySelectorAll('.step').forEach(function (el) {
-    el.addEventListener('click', function () {
-      var n = el.getAttribute('data-step');
-      document.querySelectorAll('.step').forEach(function (s) { s.classList.remove('active'); });
-      el.classList.add('active');
-      for (var i = 1; i <= 4; i++) {
-        var dot = document.getElementById('d' + i);
-        var label = document.getElementById('t' + i);
-        var sub = document.getElementById('s' + i);
-        if (String(i) === n) {
-          dot.setAttribute('stroke', colors[i - 1]);
-          label.classList.add('on');
-          label.setAttribute('fill', colors[i - 1]);
-          sub.setAttribute('fill', colors[i - 1]);
-        } else {
-          dot.setAttribute('stroke', '#64748b');
-          label.classList.remove('on');
-          label.setAttribute('fill', '#64748b');
-          sub.setAttribute('fill', '#64748b');
+  var $ = function (sel, root) { return (root || document).querySelector(sel); };
+  var $$ = function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };
+  var SITE = 'https://learnwithclay.ai';
+  var CONSULT = 'https://calendly.com/clayton-learnwithclay';
+  var API = SITE + '/api/parent/chat';
+
+  /* ---------------------------------------------------------------- prefs */
+  var DEFAULTS = { sounds: true, cites: true, clock24: false, size: 'normal', sn: 'VisitingParent' };
+  var prefs = (function () {
+    try {
+      var raw = localStorage.getItem('pa-prefs');
+      if (raw) {
+        var p = JSON.parse(raw);
+        for (var k in DEFAULTS) { if (p[k] === undefined) p[k] = DEFAULTS[k]; }
+        return p;
+      }
+    } catch (e) {}
+    return JSON.parse(JSON.stringify(DEFAULTS));
+  })();
+  function savePrefs() {
+    try { localStorage.setItem('pa-prefs', JSON.stringify(prefs)); } catch (e) {}
+  }
+
+  var soundOn = prefs.sounds;
+
+  var transcript = $('#chatTranscript');
+  var input = $('#chatInput');
+  var sendBtn = $('#sendBtn');
+  var buddyInfo = $('#buddyinfo');
+  var signon = $('#signon');
+  var lastFocus = null;
+
+  /* ---------------------------------------------------------------- toast */
+  var toastEl = $('#toast'), toastTimer = null;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 2600);
+  }
+
+  /* ---------------------------------------------------------------- clock */
+  var clockEl = $('#clock');
+  function tickClock() {
+    var d = new Date();
+    var h = d.getHours(), m = d.getMinutes();
+    var mm = (m < 10 ? '0' : '') + m;
+    if (prefs.clock24) {
+      clockEl.textContent = (h < 10 ? '0' : '') + h + ':' + mm;
+    } else {
+      var ap = h >= 12 ? 'PM' : 'AM';
+      h = h % 12 || 12;
+      clockEl.textContent = h + ':' + mm + ' ' + ap;
+    }
+    clockEl.setAttribute('aria-label', d.toDateString() + ', ' + clockEl.textContent);
+  }
+  tickClock();
+  setInterval(tickClock, 10000);
+  clockEl.addEventListener('click', function () {
+    prefs.clock24 = !prefs.clock24;
+    savePrefs();
+    tickClock();
+    refreshChecks();
+    var d = new Date();
+    toast(d.toDateString() + ', ' + (prefs.clock24 ? '24 hour clock on' : '12 hour clock on'));
+  });
+
+  /* ---------------------------------------------------------------- sounds */
+  var audio = null;
+  function ac() {
+    if (!audio) {
+      try { audio = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { audio = null; }
+    }
+    if (audio && audio.state === 'suspended') { try { audio.resume(); } catch (e) {} }
+    return audio;
+  }
+  function tone(freq, t0, dur, vol) {
+    var ctx = ac(); if (!ctx || !soundOn) return;
+    var o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'square'; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, ctx.currentTime + t0);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t0 + dur);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(ctx.currentTime + t0); o.stop(ctx.currentTime + t0 + dur);
+  }
+  function doorSound() { tone(392, 0, 0.09, 0.05); tone(523, 0.08, 0.09, 0.05); tone(659, 0.16, 0.14, 0.05); }
+  function imSound() { tone(880, 0, 0.07, 0.05); tone(1175, 0.07, 0.12, 0.05); }
+  function blip() { tone(660, 0, 0.05, 0.03); }
+
+  var soundToggle = $('#soundToggle');
+  function paintSound() {
+    soundToggle.textContent = (prefs.sounds ? '\uD83D\uDD0A' : '\uD83D\uDD07') + ' Sounds';
+    soundToggle.setAttribute('aria-pressed', prefs.sounds ? 'true' : 'false');
+  }
+  soundToggle.addEventListener('click', function () {
+    prefs.sounds = !prefs.sounds; soundOn = prefs.sounds; savePrefs(); paintSound();
+    toast('Sounds ' + (prefs.sounds ? 'on' : 'off'));
+    if (prefs.sounds) blip();
+  });
+
+  /* ---------------------------------------------------------------- prefs UI */
+  function paintPrefs() {
+    document.body.classList.toggle('large', prefs.size === 'large');
+    transcript.classList.toggle('hide-cites', !prefs.cites);
+    soundOn = prefs.sounds;
+    paintSound();
+  }
+
+  /* ---------------------------------------------------------------- modal */
+  var modal = $('#modal');
+  function closeModal() {
+    if (!modal.classList.contains('open')) return;
+    modal.classList.remove('open');
+    modal.innerHTML = '';
+    if (lastFocus && lastFocus.focus) { try { lastFocus.focus(); } catch (e) {} }
+    lastFocus = null;
+  }
+  function showModal(opts) {
+    lastFocus = document.activeElement;
+    modal.innerHTML =
+      '<div class="dialog outset" role="document">' +
+        '<div class="titlebar"><span class="tb-title" id="modalTitle"></span>' +
+          '<span class="tb-btns"><button class="tb-btn" type="button" data-modal-close aria-label="Close dialog">&#10005;</button></span>' +
+        '</div>' +
+        '<div class="body"></div>' +
+        '<div class="foot"></div>' +
+      '</div>';
+    $('#modalTitle', modal).textContent = opts.title || '';
+    $('.body', modal).innerHTML = opts.body || '';
+    var foot = $('.foot', modal);
+    (opts.buttons || [{ label: 'OK', primary: true }]).forEach(function (b) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn3d';
+      btn.textContent = b.label;
+      if (b.primary) btn.style.fontWeight = 'bold';
+      btn.addEventListener('click', function () {
+        var keep = b.onClick && b.onClick(modal) === false;
+        if (!keep) closeModal();
+      });
+      foot.appendChild(btn);
+    });
+    modal.classList.add('open');
+    if (opts.onOpen) opts.onOpen(modal);
+    var first = $('.body button, .body input, .foot .btn3d', modal);
+    if (first) first.focus();
+  }
+  modal.addEventListener('click', function (e) {
+    if (e.target === modal) closeModal();
+    if (e.target.hasAttribute && e.target.hasAttribute('data-modal-close')) closeModal();
+  });
+
+  /* ---------------------------------------------------------------- menus */
+  var MENUS = {
+    buddylist: [
+      { label: 'My AIM', items: [
+        { t: 'Preferences...', a: 'prefs' },
+        { t: 'Change Screen Name...', a: 'rename' },
+        { t: 'Sounds On or Off', a: 'soundtoggle' },
+        { sep: true },
+        { t: 'Sign Off', a: 'signoff' }
+      ] },
+      { label: 'People', items: [
+        { t: 'IM VaultAdvisor', a: 'im' },
+        { t: 'Buddy Info', a: 'info' },
+        { sep: true },
+        { t: 'Request a Scoping Call', a: 'consult' },
+        { t: 'Open the Live Assistant', a: 'live' }
+      ] },
+      { label: 'Help', items: [
+        { t: 'How It Works', a: 'howto' },
+        { t: 'Safety and Crisis Resources', a: 'safety' },
+        { t: 'Keyboard Shortcuts', a: 'keys' },
+        { sep: true },
+        { t: 'About Parent Advisor', a: 'about' }
+      ] }
+    ],
+    im: [
+      { label: 'File', items: [
+        { t: 'Save Conversation...', a: 'save' },
+        { t: 'Print Conversation', a: 'print' },
+        { sep: true },
+        { t: 'Clear Conversation', a: 'clear' },
+        { t: 'Close Window', a: 'closeim' }
+      ] },
+      { label: 'Edit', items: [
+        { t: 'Copy Conversation', a: 'copyall' },
+        { t: 'Copy Last Answer', a: 'copylast' },
+        { sep: true },
+        { t: 'Clear the Input Box', a: 'clearinput' }
+      ] },
+      { label: 'View', items: [
+        { t: 'Normal Text Size', a: 'size-normal', check: function () { return prefs.size !== 'large'; } },
+        { t: 'Large Text Size', a: 'size-large', check: function () { return prefs.size === 'large'; } },
+        { sep: true },
+        { t: 'Show Citations', a: 'cites', check: function () { return prefs.cites; } },
+        { t: '24 Hour Clock', a: 'clock24', check: function () { return prefs.clock24; } },
+        { sep: true },
+        { t: 'Show Buddy List', a: 'showbuddies' }
+      ] },
+      { label: 'Insert', items: [
+        { t: 'Bold', a: 'bold' },
+        { t: 'Italic', a: 'italic' },
+        { t: 'Underline', a: 'underline' },
+        { sep: true },
+        { t: 'Smiley', a: 'smiley' },
+        { t: 'Insert a Link', a: 'insertlink' },
+        { t: "Insert Today's Date", a: 'insertdate' }
+      ] },
+      { label: 'People', items: [
+        { t: 'IM VaultAdvisor', a: 'im' },
+        { t: 'Request a Scoping Call', a: 'consult' },
+        { t: 'Open the Live Assistant', a: 'live' },
+        { sep: true },
+        { t: 'Sign Off', a: 'signoff' }
+      ] }
+    ]
+  };
+
+  var openMenu = null, openMenuBtn = null;
+
+  function closeMenu() {
+    if (openMenu) { openMenu.classList.remove('open'); }
+    if (openMenuBtn) { openMenuBtn.setAttribute('aria-expanded', 'false'); }
+    openMenu = null; openMenuBtn = null;
+  }
+
+  function buildMenu(bar) {
+    var key = bar.getAttribute('data-menu');
+    var def = MENUS[key] || [];
+    var btns = $$(':scope > button', bar);
+    btns.forEach(function (btn, i) {
+      var spec = def[i];
+      if (!spec) return;
+      var menu = document.createElement('div');
+      menu.className = 'menu';
+      menu.setAttribute('role', 'menu');
+      spec.items.forEach(function (item) {
+        if (item.sep) {
+          var sep = document.createElement('div');
+          sep.className = 'sep';
+          menu.appendChild(sep);
+          return;
         }
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.setAttribute('role', 'menuitem');
+        if (item.check) {
+          b.setAttribute('role', 'menuitemradio');
+          b.setAttribute('aria-checked', item.check() ? 'true' : 'false');
+          b.innerHTML = '<span class="check">&#10003;</span><span></span><span></span>';
+          b.children[1].textContent = item.t;
+          b.setAttribute('data-check', item.a);
+        } else {
+          b.textContent = item.t;
+        }
+        b.setAttribute('data-act', item.a);
+        b.addEventListener('click', function () {
+          closeMenu();
+          runAction(item.a);
+        });
+        menu.appendChild(b);
+      });
+      bar.appendChild(menu);
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var isOpen = menu.classList.contains('open');
+        closeMenu();
+        closeStart(); closeSnPick();
+        if (!isOpen) {
+          menu.classList.add('open');
+          btn.setAttribute('aria-expanded', 'true');
+          openMenu = menu; openMenuBtn = btn;
+          var firstItem = $('button', menu);
+          if (firstItem) firstItem.focus();
+        }
+      });
+      btn.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowDown') { e.preventDefault(); btn.click(); }
+      });
+      menu.addEventListener('click', function (e) { e.stopPropagation(); });
+      menu.addEventListener('keydown', function (e) {
+        var items = $$('button', menu);
+        var idx = items.indexOf(document.activeElement);
+        if (e.key === 'ArrowDown') { e.preventDefault(); items[(idx + 1) % items.length].focus(); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); items[(idx - 1 + items.length) % items.length].focus(); }
+        else if (e.key === 'Escape') { closeMenu(); if (btn) btn.focus(); }
+        else if (e.key === 'Tab') { closeMenu(); }
+      });
+    });
+  }
+  $$('.menubar').forEach(buildMenu);
+
+  function refreshChecks() {
+    $$('.menu button[data-check]').forEach(function (b) {
+      var a = b.getAttribute('data-check');
+      var on = false;
+      if (a === 'cites') on = prefs.cites;
+      else if (a === 'clock24') on = prefs.clock24;
+      else if (a === 'size-normal') on = prefs.size !== 'large';
+      else if (a === 'size-large') on = prefs.size === 'large';
+      b.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+  }
+
+  /* ---------------------------------------------------------------- actions */
+  function runAction(a) {
+    switch (a) {
+      case 'prefs': openPrefs(); break;
+      case 'rename': openRename(); break;
+      case 'soundtoggle':
+        prefs.sounds = !prefs.sounds; savePrefs(); paintPrefs();
+        toast('Sounds ' + (prefs.sounds ? 'on' : 'off'));
+        break;
+      case 'signoff': logOff(); break;
+      case 'im': openIM(); break;
+      case 'consult': window.open(CONSULT, '_blank', 'noopener'); break;
+      case 'live': window.open(SITE, '_blank', 'noopener'); break;
+      case 'info': showInfo(); break;
+      case 'howto': showHowTo(); break;
+      case 'safety': showSafety(); break;
+      case 'keys': showKeys(); break;
+      case 'about': showAbout(); break;
+      case 'save': saveConversation(); break;
+      case 'print': window.print(); break;
+      case 'clear': clearConversation(); break;
+      case 'closeim': setWin('imwin', 'closed'); break;
+      case 'copyall': copyText(transcriptText(), 'Conversation copied'); break;
+      case 'copylast': copyText(lastAnswerText(), 'Last answer copied'); break;
+      case 'clearinput': input.value = ''; input.focus(); toast('Input cleared'); break;
+      case 'size-normal': prefs.size = 'normal'; savePrefs(); paintPrefs(); refreshChecks(); toast('Normal text'); break;
+      case 'size-large': prefs.size = 'large'; savePrefs(); paintPrefs(); refreshChecks(); toast('Large text'); break;
+      case 'cites':
+        prefs.cites = !prefs.cites; savePrefs(); paintPrefs(); refreshChecks();
+        toast('Citations ' + (prefs.cites ? 'shown' : 'hidden'));
+        break;
+      case 'clock24':
+        prefs.clock24 = !prefs.clock24; savePrefs(); tickClock(); refreshChecks();
+        toast(prefs.clock24 ? '24 hour clock' : '12 hour clock');
+        break;
+      case 'showbuddies': openWin('buddylist'); break;
+      case 'bold': applyFormat('bold'); break;
+      case 'italic': applyFormat('italic'); break;
+      case 'underline': applyFormat('underline'); break;
+      case 'smiley': insertSmiley(); break;
+      case 'insertlink': insertLink(); break;
+      case 'insertdate': insertAtCursor(new Date().toLocaleDateString()); break;
+      default: break;
+    }
+  }
+
+  /* ---------------------------------------------------------------- windows */
+  var winState = {};
+  function winEl(id) { return document.getElementById(id); }
+  function taskBtn(id) { return $('.task-item[data-win="' + id + '"]'); }
+
+  function setWin(id, state) {
+    var el = winEl(id); if (!el) return;
+    var btn = taskBtn(id);
+    if (state === 'closed') {
+      el.classList.add('is-hidden');
+      if (btn) btn.classList.add('is-hidden');
+      el.classList.remove('is-max', 'is-blur');
+      el.style.left = ''; el.style.top = ''; el.style.width = ''; el.style.height = '';
+      winState[id] = 'closed';
+      updateTaskbar();
+      return;
+    }
+    if (btn) btn.classList.remove('is-hidden');
+    if (state === 'min') {
+      el.classList.add('is-hidden');
+      winState[id] = 'min';
+      updateTaskbar();
+      return;
+    }
+    el.classList.remove('is-hidden');
+    if (state === 'max') {
+      if (window.innerWidth > 820) {
+        el.dataset.restore = JSON.stringify({
+          left: el.style.left, top: el.style.top, width: el.style.width, height: el.style.height
+        });
+        el.classList.add('is-max');
+        el.style.left = '6px';
+        el.style.top = '6px';
+        el.style.width = Math.max(280, window.innerWidth - 14) + 'px';
+        el.style.height = Math.max(240, window.innerHeight - 44) + 'px';
+      }
+      winState[id] = 'max';
+    } else {
+      if (el.classList.contains('is-max') && el.dataset.restore) {
+        var r = {};
+        try { r = JSON.parse(el.dataset.restore); } catch (e) {}
+        el.classList.remove('is-max');
+        el.style.left = r.left || ''; el.style.top = r.top || '';
+        el.style.width = r.width || ''; el.style.height = r.height || '';
+      }
+      winState[id] = 'open';
+    }
+    focusWin(id);
+    updateTaskbar();
+  }
+
+  var topZ = 10;
+  function focusWin(id) {
+    $$('.window').forEach(function (w) { w.classList.add('is-blur'); });
+    var el = winEl(id); if (!el) return;
+    el.classList.remove('is-blur');
+    el.style.zIndex = ++topZ;
+    updateTaskbar();
+  }
+
+  function updateTaskbar() {
+    $$('.task-item').forEach(function (b) {
+      var id = b.getAttribute('data-win');
+      var el = winEl(id);
+      if (!el) return;
+      var visible = !el.classList.contains('is-hidden');
+      b.classList.toggle('active', visible && !el.classList.contains('is-blur'));
+      b.setAttribute('aria-pressed', visible ? 'true' : 'false');
+    });
+  }
+
+  function openWin(id) {
+    var el = winEl(id);
+    if (!el) return;
+    if (winState[id] === 'closed' || el.classList.contains('is-hidden')) setWin(id, 'open');
+    else focusWin(id);
+  }
+  function openIM() {
+    openWin('imwin');
+    try { input.focus(); } catch (e) {}
+  }
+
+  $$('.window').forEach(function (w) {
+    winState[w.id] = 'open';
+    w.addEventListener('mousedown', function () { focusWin(w.id); });
+    w.addEventListener('focusin', function () { focusWin(w.id); });
+  });
+  updateTaskbar();
+
+  $$('.tb-btn[data-win-act]').forEach(function (b) {
+    b.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var id = b.getAttribute('data-win');
+      var act = b.getAttribute('data-win-act');
+      if (act === 'min') { setWin(id, 'min'); }
+      else if (act === 'max') { setWin(id, winState[id] === 'max' ? 'open' : 'max'); }
+      else if (act === 'close') { setWin(id, 'closed'); }
+    });
+  });
+
+  $$('.task-item').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var id = b.getAttribute('data-win');
+      var el = winEl(id);
+      if (!el) return;
+      if (winState[id] === 'min' || winState[id] === 'closed' || el.classList.contains('is-hidden')) setWin(id, 'open');
+      else if (!el.classList.contains('is-blur')) setWin(id, 'min');
+      else focusWin(id);
+    });
+  });
+
+  /* drag */
+  function makeDraggable(win) {
+    var bar = win.querySelector('.titlebar');
+    var dragging = false, sx = 0, sy = 0, ox = 0, oy = 0;
+    bar.addEventListener('pointerdown', function (e) {
+      if (e.target.closest('.tb-btn')) return;
+      if (window.innerWidth <= 820) return;
+      if (win.classList.contains('is-max')) return;
+      var rect = win.getBoundingClientRect();
+      dragging = true;
+      sx = e.clientX; sy = e.clientY;
+      ox = rect.left; oy = rect.top;
+      win.style.left = ox + 'px';
+      win.style.top = oy + 'px';
+      try { bar.setPointerCapture(e.pointerId); } catch (err) {}
+      document.body.style.userSelect = 'none';
+    });
+    bar.addEventListener('pointermove', function (e) {
+      if (!dragging) return;
+      var nx = Math.max(0, Math.min(window.innerWidth - 60, ox + (e.clientX - sx)));
+      var ny = Math.max(0, Math.min(window.innerHeight - 70, oy + (e.clientY - sy)));
+      win.style.left = nx + 'px';
+      win.style.top = ny + 'px';
+    });
+    function end() {
+      if (!dragging) return;
+      dragging = false;
+      document.body.style.userSelect = '';
+    }
+    bar.addEventListener('pointerup', end);
+    bar.addEventListener('pointercancel', end);
+  }
+  $$('.window').forEach(makeDraggable);
+
+  window.addEventListener('resize', function () {
+    $$('.window.is-max').forEach(function (el) {
+      el.style.width = Math.max(280, window.innerWidth - 14) + 'px';
+      el.style.height = Math.max(240, window.innerHeight - 44) + 'px';
+    });
+  });
+
+  /* ---------------------------------------------------------------- start menu */
+  var startMenu = $('#startmenu'), startBtn = $('#startBtn');
+  var START_ITEMS = [
+    { t: 'Buddy List', a: 'showbuddies', ic: '\uD83D\uDC65' },
+    { t: 'Instant Message', a: 'im', ic: '\uD83D\uDCAC' },
+    { t: 'Preferences...', a: 'prefs', ic: '\u2699' },
+    { sep: true },
+    { t: 'How It Works', a: 'howto', ic: '\u2139' },
+    { t: 'Safety and Crisis Resources', a: 'safety', ic: '\u26A0' },
+    { t: 'Keyboard Shortcuts', a: 'keys', ic: '\u2328' },
+    { sep: true },
+    { t: 'Request a Scoping Call', a: 'consult', ic: '\uD83D\uDCDE' },
+    { t: 'Live Assistant', a: 'live', ic: '\uD83C\uDF10' },
+    { t: 'About', a: 'about', ic: '\u2139' },
+    { sep: true },
+    { t: 'Sign Off', a: 'signoff', ic: '\u23FB' }
+  ];
+  START_ITEMS.forEach(function (it) {
+    if (it.sep) {
+      var s = document.createElement('div');
+      s.className = 'sep';
+      startMenu.appendChild(s);
+      return;
+    }
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('role', 'menuitem');
+    b.innerHTML = '<span class="ic" aria-hidden="true"></span><span></span>';
+    b.children[0].textContent = it.ic;
+    b.children[1].textContent = it.t;
+    b.addEventListener('click', function () {
+      closeStart();
+      runAction(it.a);
+    });
+    startMenu.appendChild(b);
+  });
+  function closeStart() {
+    startMenu.classList.remove('open');
+    startBtn.setAttribute('aria-expanded', 'false');
+  }
+  startBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var isOpen = startMenu.classList.contains('open');
+    closeMenu(); closeSnPick(); closeStart();
+    if (!isOpen) {
+      startMenu.classList.add('open');
+      startBtn.setAttribute('aria-expanded', 'true');
+      var first = $('button', startMenu);
+      if (first) first.focus();
+    }
+  });
+  startMenu.addEventListener('click', function (e) { e.stopPropagation(); });
+  startMenu.addEventListener('keydown', function (e) {
+    var items = $$('button', startMenu);
+    var idx = items.indexOf(document.activeElement);
+    if (e.key === 'Escape') { closeStart(); startBtn.focus(); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); items[(idx + 1) % items.length].focus(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); items[(idx - 1 + items.length) % items.length].focus(); }
+  });
+
+  document.addEventListener('click', function () {
+    closeMenu(); closeStart(); closeSnPick();
+  });
+
+  /* ---------------------------------------------------------------- screen name */
+  var snPick = $('#snPick'), snDropdown = null;
+  function closeSnPick() {
+    if (snDropdown) { snDropdown.remove(); snDropdown = null; }
+    if (snPick) snPick.setAttribute('aria-expanded', 'false');
+  }
+  function setScreenName(raw) {
+    var sn = String(raw || '').replace(/[^A-Za-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 16) || 'VisitingParent';
+    prefs.sn = sn; savePrefs();
+    $('#snLabel').textContent = sn;
+    $('#snInput').value = sn;
+    return sn;
+  }
+  function welcome() {
+    var sn = $('#snLabel').textContent || 'VisitingParent';
+    buddyInfo.innerHTML = '<div class="bi-head">Welcome, ' + escapeHtml(sn) + '</div>' +
+      'A knowledge base your experts control, and the assistant that answers out of it. ' +
+      'Click a buddy in <b>How It Works</b> for info. IM <b>VaultAdvisor</b> to ask a question.';
+  }
+  function openSnPick() {
+    var isOpen = !!snDropdown;
+    closeMenu(); closeStart(); closeSnPick();
+    if (isOpen) return;
+    snDropdown = document.createElement('div');
+    snDropdown.className = 'dropdown open';
+    snDropdown.style.position = 'fixed';
+    var rect = snPick.getBoundingClientRect();
+    snDropdown.style.top = (rect.bottom + 2) + 'px';
+    snDropdown.style.left = Math.max(4, rect.right - 170) + 'px';
+    [{ t: 'VisitingParent', v: 'VisitingParent' },
+     { t: 'Parent', v: 'Parent' },
+     { t: 'Family', v: 'Family' },
+     { t: 'Change Screen Name...', v: '__ask' }].forEach(function (o) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = o.t;
+      b.addEventListener('click', function () {
+        closeSnPick();
+        if (o.v === '__ask') openRename();
+        else { setScreenName(o.v); welcome(); toast('Screen name is now ' + o.v); }
+      });
+      snDropdown.appendChild(b);
+    });
+    document.body.appendChild(snDropdown);
+    snPick.setAttribute('aria-expanded', 'true');
+    var first = $('button', snDropdown);
+    if (first) first.focus();
+  }
+  snPick.addEventListener('click', function (e) { e.stopPropagation(); openSnPick(); });
+  document.addEventListener('click', function (e) {
+    if (snDropdown && !snDropdown.contains(e.target) && e.target !== snPick) closeSnPick();
+  });
+
+  function openRename() {
+    showModal({
+      title: 'Change Screen Name',
+      body: '<p>Pick the name that appears on your messages. Letters, numbers, and spaces only, up to 16 characters.</p>' +
+            '<input type="text" id="renameInput" maxlength="16" value="' + escapeHtml($('#snLabel').textContent) + '" aria-label="New screen name">',
+      buttons: [
+        { label: 'Cancel' },
+        { label: 'OK', primary: true, onClick: function (m) {
+            var v = setScreenName($('#renameInput', m).value);
+            welcome();
+            toast('Screen name is now ' + v);
+          } }
+      ],
+      onOpen: function (m) {
+        var el = $('#renameInput', m);
+        el.focus(); el.select();
+        el.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') {
+            var v = setScreenName(el.value); welcome(); toast('Screen name is now ' + v); closeModal();
+          }
+        });
+      }
+    });
+  }
+
+  /* ---------------------------------------------------------------- preferences */
+  function openPrefs() {
+    showModal({
+      title: 'Preferences',
+      body:
+        '<div class="pref-row"><input type="checkbox" id="prefSounds"' + (prefs.sounds ? ' checked' : '') + '><label for="prefSounds">Sounds</label></div>' +
+        '<div class="pref-row"><input type="checkbox" id="prefCites"' + (prefs.cites ? ' checked' : '') + '><label for="prefCites">Show citation lines under answers</label></div>' +
+        '<div class="pref-row"><input type="checkbox" id="prefClock"' + (prefs.clock24 ? ' checked' : '') + '><label for="prefClock">24 hour clock in the taskbar</label></div>' +
+        '<div class="pref-row"><input type="checkbox" id="prefBig"' + (prefs.size === 'large' ? ' checked' : '') + '><label for="prefBig">Large text in the conversation</label></div>' +
+        '<div class="pref-row"><label for="prefSN" style="min-width:86px;font-weight:bold;">ScreenName</label>' +
+        '<input type="text" id="prefSN" maxlength="16" value="' + escapeHtml($('#snLabel').textContent) + '"></div>',
+      buttons: [
+        { label: 'Cancel' },
+        { label: 'Apply', primary: true, onClick: function (m) {
+            prefs.sounds = $('#prefSounds', m).checked;
+            prefs.cites = $('#prefCites', m).checked;
+            prefs.clock24 = $('#prefClock', m).checked;
+            prefs.size = $('#prefBig', m).checked ? 'large' : 'normal';
+            savePrefs(); paintPrefs(); tickClock(); refreshChecks();
+            setScreenName($('#prefSN', m).value);
+            welcome();
+            toast('Preferences applied');
+          } }
+      ]
+    });
+  }
+
+  /* ---------------------------------------------------------------- dialogs */
+  function showInfo() {
+    openWin('buddylist');
+    buddyInfo.innerHTML = '<div class="bi-head">About Parent Advisor</div>' +
+      'A knowledge base your experts control, and the assistant that answers out of it. ' +
+      'Preview derived from the vault (1,300+ notes).<br><br>' +
+      '<button class="linkish" type="button" data-act="about">More about this preview</button>';
+  }
+  function showHowTo() {
+    openWin('buddylist');
+    buddyInfo.innerHTML = '<div class="bi-head">How It Works</div>' +
+      '<b>1 Curate.</b> People who know the field write it. Nothing goes in until it is read.<br>' +
+      '<b>2 Connect.</b> One question reaches the whole vault.<br>' +
+      '<b>3 Retrieve.</b> A question pulls out the right passages. The model sees nothing else.<br>' +
+      '<b>4 Answer.</b> Replies cite the notes behind them, and a human stays the expert.';
+  }
+  function showSafety() {
+    showModal({
+      title: 'Safety and Crisis Resources',
+      body:
+        '<p><b>If you or your child is in danger right now, reach out first:</b></p>' +
+        '<ul>' +
+        '<li><a href="tel:988">988 Suicide and Crisis Lifeline</a>: call or text 988 (US). ASL video line available.</li>' +
+        '<li>Crisis Text Line: text HOME to 741741.</li>' +
+        '<li>Child abuse or an unsafe child: <a href="tel:18004224453">1-800-422-4453</a> (Childhelp), or 911.</li>' +
+        '</ul>' +
+        '<p>In the live system, safety paths fire before the model runs, and clinical questions route to a person.</p>',
+      buttons: [{ label: 'Close', primary: true }]
+    });
+  }
+  function showKeys() {
+    showModal({
+      title: 'Keyboard Shortcuts',
+      body:
+        '<ul>' +
+        '<li><b>Enter</b> sends a message.</li>' +
+        '<li><b>Alt 1</b> opens the Buddy List.</li>' +
+        '<li><b>Alt 2</b> opens the Instant Message window.</li>' +
+        '<li><b>Alt P</b> opens Preferences.</li>' +
+        '<li><b>Esc</b> closes a menu or dialog.</li>' +
+        '<li><b>Tab</b> moves through every control on the page.</li>' +
+        '</ul>',
+      buttons: [{ label: 'Close', primary: true }]
+    });
+  }
+  function showAbout() {
+    showModal({
+      title: 'About Parent Advisor',
+      body:
+        '<p>A knowledge base your experts control, and the assistant that answers out of it. ' +
+        'This preview is derived from the vault (1,300+ notes) and answers from four grounded paths ' +
+        'when the live API cannot be reached.</p>' +
+        '<p>Built by Clayton Lawson. <a href="' + SITE + '" target="_blank" rel="noopener">learnwithclay.ai</a></p>',
+      buttons: [
+        { label: 'Request a Scoping Call', onClick: function () { window.open(CONSULT, '_blank', 'noopener'); } },
+        { label: 'Close', primary: true }
+      ]
+    });
+  }
+  buddyInfo.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-act]');
+    if (b) runAction(b.getAttribute('data-act'));
+  });
+
+  /* ---------------------------------------------------------------- buddy list */
+  var stepInfo = {
+    curate:   { head: 'STEP 1: Curate',   body: 'People who know the field write it. Nothing goes in until it is read. Written and checked by hand.', sub: 'read first' },
+    connect:  { head: 'STEP 2: Connect',  body: 'One question reaches the whole vault. Notes are written the way families type. The vault stays on your machines.', sub: 'one question, whole vault' },
+    retrieve: { head: 'STEP 3: Retrieve', body: 'A question pulls out the right passages. The model sees nothing else. A silent vault gets an honest answer.', sub: 'right passages only' },
+    answer:   { head: 'STEP 4: Answer',   body: 'Replies cite the notes behind them. Clinical questions go to a person. Safety paths fire before the model. A human is always the expert.', sub: 'cited, human expert' }
+  };
+
+  $$('.buddy').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var key = b.getAttribute('data-buddy');
+      if (stepInfo[key]) {
+        var s = stepInfo[key];
+        buddyInfo.innerHTML = '<div class="bi-head">' + s.head + '</div>' + s.body +
+          '<div style="margin-top:5px;color:#666;font-style:italic;">' + s.sub + '</div>';
+        blip();
+      } else if (key === 'advisor') {
+        buddyInfo.innerHTML = '<div class="bi-head">VaultAdvisor</div>Online and answering from the vault. Ask me anything about raising a Deaf or hard of hearing child. I cite where answers come from.';
+        openIM();
+        blip();
+      } else if (key === 'call') {
+        buddyInfo.innerHTML = '<div class="bi-head">ScopingCall</div>Talk to a person about the live system. ' +
+          '<a href="' + CONSULT + '" target="_blank" rel="noopener">Request a scoping call</a>';
+        window.open(CONSULT, '_blank', 'noopener');
+      } else if (key === 'live') {
+        buddyInfo.innerHTML = '<div class="bi-head">LiveAssistant</div>The full assistant, wired to the real vault. ' +
+          '<a href="' + SITE + '" target="_blank" rel="noopener">See the live assistant</a>';
+        window.open(SITE, '_blank', 'noopener');
       }
     });
   });
 
-  // ---- Advisor answer paths ----
+  $$('.group-head').forEach(function (head) {
+    head.addEventListener('click', function () {
+      var group = head.getAttribute('data-group');
+      var expanded = head.getAttribute('aria-expanded') !== 'false';
+      head.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+      $('.arrow', head).innerHTML = expanded ? '&#9654;' : '&#9660;';
+      $$('.buddy[data-group="' + group + '"]').forEach(function (b) {
+        b.classList.toggle('is-hidden', expanded);
+      });
+      blip();
+    });
+  });
+
+  $('#imBtn').addEventListener('click', openIM);
+  $('#infoBtn').addEventListener('click', showInfo);
+  $('#setupBtn').addEventListener('click', openPrefs);
+
+  /* ---------------------------------------------------------------- formatting */
+  function applyFormat(kind) {
+    var start = input.selectionStart || 0, end = input.selectionEnd || 0;
+    var val = input.value;
+    var sel = val.slice(start, end);
+    var marks = { bold: ['**', '**'], italic: ['_', '_'], underline: ['__', '__'] };
+    var m = marks[kind];
+    if (!m) return;
+    input.value = val.slice(0, start) + m[0] + (sel || 'text') + m[1] + val.slice(end);
+    var caret = start + m[0].length + (sel ? sel.length : 4);
+    input.focus();
+    input.setSelectionRange(caret, caret);
+    toast(kind.charAt(0).toUpperCase() + kind.slice(1) + ' formatting added');
+  }
+  $$('[data-format]').forEach(function (b) {
+    b.addEventListener('click', function () { applyFormat(b.getAttribute('data-format')); });
+  });
+
+  var SMILEYS = [':)', ':(', ';)', ':D', ':-O', 'O:-)', ':-(', '<3', ':*', '=(', ':-P'];
+  var smileyIndex = 0;
+  function insertSmiley() { insertAtCursor(' ' + SMILEYS[smileyIndex % SMILEYS.length] + ' '); smileyIndex++; }
+  $('#smileyBtn').addEventListener('click', insertSmiley);
+
+  function insertAtCursor(text) {
+    var start = input.selectionStart || input.value.length;
+    var end = input.selectionEnd || input.value.length;
+    var val = input.value;
+    input.value = val.slice(0, start) + text + val.slice(end);
+    var caret = start + text.length;
+    input.focus();
+    input.setSelectionRange(caret, caret);
+  }
+  function insertLink() {
+    showModal({
+      title: 'Insert a Link',
+      body: '<p>Paste a web address. It will be added to your message.</p>' +
+            '<input type="text" id="linkInput" placeholder="https://example.org" aria-label="Web address">',
+      buttons: [
+        { label: 'Cancel' },
+        { label: 'Insert', primary: true, onClick: function (m) {
+            var v = ($('#linkInput', m).value || '').trim();
+            if (!v) { return false; }
+            if (!/^https?:\/\//i.test(v)) v = 'https://' + v;
+            insertAtCursor(' ' + v + ' ');
+          } }
+      ],
+      onOpen: function (m) { $('#linkInput', m).focus(); }
+    });
+  }
+
+  /* ---------------------------------------------------------------- warn meter */
+  var warnLevel = 0;
+  var warnBtn = $('#warnBtn');
+  function paintWarn() {
+    $('.warnmeter i').style.width = warnLevel + '%';
+    $('.warnmeter').setAttribute('aria-valuenow', String(warnLevel));
+    $('#warnPct').textContent = warnLevel + '%';
+    warnBtn.disabled = warnLevel >= 100;
+    warnBtn.setAttribute('aria-disabled', warnBtn.disabled ? 'true' : 'false');
+  }
+  warnBtn.addEventListener('click', function () {
+    if (warnLevel >= 100) return;
+    showModal({
+      title: 'Send a Warning',
+      body: '<p>Warn the other person that this conversation is getting heated. Warnings are logged in the conversation.</p>' +
+            '<p>Warning level: <b>' + warnLevel + '%</b> used.</p>',
+      buttons: [
+        { label: 'Cancel' },
+        { label: 'Send Warning', primary: true, onClick: function () {
+            warnLevel = Math.min(100, warnLevel + 20);
+            paintWarn();
+            addMessage('You sent a warning to VaultAdvisor. Warning level is now ' + warnLevel + '%.', 'sys');
+            tone(220, 0, 0.3, 0.06);
+          } }
+      ]
+    });
+  });
+  paintWarn();
+
+  /* ---------------------------------------------------------------- sign on */
+  var signOnBtn = $('#signOnBtn');
+  function signOn() {
+    setScreenName($('#snInput').value);
+    welcome();
+    signon.style.display = 'none';
+    doorSound();
+    transcript.innerHTML = '';
+    addMessage('Ask me anything about raising a Deaf or hard of hearing child. I answer from the vault, and I cite where answers come from.', 'advisor');
+    addMessage('Safety note: if your question suggests a crisis, I put crisis resources first, before anything else.', 'advisor');
+    setWin('buddylist', 'open');
+    setWin('imwin', 'open');
+    input.focus();
+  }
+  signOnBtn.addEventListener('click', signOn);
+  $('#snInput').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') signOn();
+  });
+
+  function logOff() {
+    closeModal();
+    signon.style.display = 'flex';
+    ['buddylist', 'imwin'].forEach(function (id) { setWin(id, 'closed'); });
+    transcript.innerHTML = '';
+    $('#snInput').value = prefs.sn || 'VisitingParent';
+    $('#snInput').focus();
+    tone(523, 0, 0.1, 0.04); tone(392, 0.1, 0.14, 0.04);
+    toast('Signed off');
+  }
+
+  /* ---------------------------------------------------------------- answers */
   var CRISIS_PATTERNS = [
     /suicide/i, /suicidal/i, /kill myself/i, /killing myself/i, /end my life/i,
     /want to die/i, /wanna die/i, /hurt(ing)? myself/i, /self[- ]?harm/i,
@@ -331,76 +1470,44 @@
     '<li>This static preview carries four full answer paths: safety and crisis, language deprivation, sign language and cochlear implants, and CRPD rights.</li>' +
     '<li>Try one of the example questions below, or ask about early access, school rights, or safety.</li>' +
     '</ul>' +
-    '<span class="cite">Preview note: answers here are hand written from the vault\'s themes. The live assistant writes them from the notes themselves.</span>';
+    '<span class="cite">Preview note: answers here are hand written from the vault themes. The live assistant writes them from the notes themselves.</span>';
 
   function route(q) {
-    var i, crisis = false;
-    for (i = 0; i < CRISIS_PATTERNS.length; i++) {
-      if (CRISIS_PATTERNS[i].test(q)) { crisis = true; break; }
+    for (var i = 0; i < CRISIS_PATTERNS.length; i++) {
+      if (CRISIS_PATTERNS[i].test(q)) return crisisAnswer;
     }
-    if (crisis) return crisisAnswer;
     if (/depriv/i.test(q) || /delay(ed)? (in )?(speech|language)/i.test(q) || /not (talk|speak)ing/i.test(q)) return deprivationAnswer;
     if (/\b(asl|sign(ing| language)?)\b/i.test(q) || /\bci\b/i.test(q) || /implant/i.test(q) || /cochlear/i.test(q)) return aslCiAnswer;
     if (/crpd/i.test(q) || /right(s)?\b/i.test(q) || /school/i.test(q) || /\biep\b/i.test(q) || /\b504\b/.test(q) || /\blead-?k\b/i.test(q)) return crpdAnswer;
     return fallbackAnswer;
   }
 
-  function addMessage(text, who) {
-    var msg = document.createElement('div');
-    msg.className = 'message ' + who;
-    var av = document.createElement('div');
-    av.className = 'avatar';
-    av.textContent = who === 'parent' ? 'P' : 'A';
-    var content = document.createElement('div');
-    content.className = 'message-content';
-    content.innerHTML = text;
-    msg.appendChild(av);
-    msg.appendChild(content);
-    transcript.appendChild(msg);
+  function timeStamp() {
+    var d = new Date();
+    var h = d.getHours(), m = d.getMinutes(), s = d.getSeconds();
+    var ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12;
+    return '(' + h + ':' + (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s + ' ' + ap + ')';
+  }
+
+  function mySN() {
+    return $('#snLabel').textContent || 'VisitingParent';
+  }
+
+  function addMessage(html, who) {
+    var line = document.createElement('div');
+    line.className = 'mline';
+    line.setAttribute('data-who', who);
+    if (who === 'sys') {
+      line.innerHTML = '<span class="sys">' + html + '</span>';
+    } else {
+      var name = who === 'parent' ? mySN() : 'VaultAdvisor';
+      var cls = who === 'parent' ? 'who-you' : 'who-adv';
+      line.innerHTML = '<span class="who ' + cls + '">' + escapeHtml(name) + ' ' + timeStamp() + ':</span> ' + html;
+    }
+    transcript.appendChild(line);
     transcript.scrollTop = transcript.scrollHeight;
-  }
-
-  function renderMarkdownLite(text) {
-    var el = document.createElement('div');
-    var escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    escaped = escaped.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
-    escaped = escaped.replace(/^# (.+)$/gm, '<b>$1</b>');
-    escaped = escaped.replace(/^## (.+)$/gm, '<b>$1</b>');
-    escaped = escaped.replace(/^[-*] (.+)$/gm, '&bull; $1');
-    escaped = escaped.replace(/\n/g, '<br>');
-    el.innerHTML = escaped;
-    return el.innerHTML;
-  }
-
-  function showTyping() {
-    var msg = document.createElement('div');
-    msg.className = 'message advisor';
-    msg.id = 'typing';
-    var av = document.createElement('div'); av.className = 'avatar'; av.textContent = 'A';
-    var content = document.createElement('div');
-    content.className = 'message-content';
-    content.innerHTML = '<span style="color:#64748b;font-family:JetBrains Mono,monospace;font-size:0.8125rem">searching the vault...</span>';
-    msg.appendChild(av); msg.appendChild(content);
-    transcript.appendChild(msg);
-    transcript.scrollTop = transcript.scrollHeight;
-  }
-
-  function renderCitations(citations) {
-    // Build citation rows: title, and when the answer came from a paper,
-    // a clickable link to the DOI so the reader can go read the source.
-    var rows = '';
-    citations.forEach(function (c) {
-      var title = String(c.title || c.source || 'vault note');
-      var link = c.url || (c.doi ? ('https://doi.org/' + c.doi) : '');
-      if (link) {
-        rows += '<li>' + escapeHtml(title) + ' <a class="doi-link" href="' + escapeHtml(link) +
-          '" target="_blank" rel="noopener noreferrer">read the paper</a></li>';
-      } else {
-        rows += '<li>' + escapeHtml(title) + '</li>';
-      }
-    });
-    var head = (citations.length === 1) ? 'Cited from the vault:' : 'Cited from the vault (' + citations.length + ' sources):';
-    return '<div class="cites"><span class="cite-head">' + head + '</span><ul>' + rows + '</ul></div>';
+    if (who === 'advisor') imSound();
+    return line;
   }
 
   function escapeHtml(text) {
@@ -409,24 +1516,80 @@
     return div.innerHTML;
   }
 
-  function ask(q) {
-    if (!q) return;
-    addMessage(q, 'parent');
-    input.value = '';
-    showTyping();
+  function renderMarkdownLite(text) {
+    var escaped = String(text)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    escaped = escaped.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
+      '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+    escaped = escaped.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+    escaped = escaped.replace(/__(.+?)__/g, '<u>$1</u>');
+    escaped = escaped.replace(/(^|[\s(])_([^_\n]{1,200})_([\s).,;:!?]|$)/g, '$1<i>$2</i>$3');
+    escaped = escaped.replace(/^#{1,6} (.+)$/gm, '<b>$1</b>');
+    escaped = escaped.replace(/^[-*] (.+)$/gm, '&bull; $1');
+    escaped = escaped.replace(/\n/g, '<br>');
+    return escaped;
+  }
 
-    // Live path: real grounded answer from the vault (learnwithclay.ai hosts
-    // the same assistant as the main site). Crisis handling runs server-side
-    // before the model, and the answer cites the notes it came from.
-    fetch('https://learnwithclay.ai/api/parent/chat', {
+  function showTyping() {
+    var line = document.createElement('div');
+    line.className = 'mline';
+    line.id = 'typing';
+    line.setAttribute('data-who', 'sys');
+    line.innerHTML = '<span class="sys">VaultAdvisor is searching the vault...</span>';
+    transcript.appendChild(line);
+    transcript.scrollTop = transcript.scrollHeight;
+  }
+
+  function renderCitations(citations) {
+    if (!citations || !citations.length) return '';
+    var rows = '';
+    citations.slice(0, 8).forEach(function (c) {
+      var title = String(c.title || c.source || 'vault note');
+      var link = c.url || (c.doi ? ('https://doi.org/' + c.doi) : '');
+      var full = c.citation ? ' title="' + escapeHtml(String(c.citation).slice(0, 400)) + '"' : '';
+      if (link) {
+        rows += '<li' + full + '>' + escapeHtml(title) + ' <a class="doi-link" href="' + escapeHtml(link) +
+          '" target="_blank" rel="noopener noreferrer">read the paper</a></li>';
+      } else {
+        rows += '<li' + full + '>' + escapeHtml(title) + '</li>';
+      }
+    });
+    var head = (citations.length === 1) ? 'Cited from the vault:' : 'Cited from the vault (' + citations.length + ' sources):';
+    return '<div class="cites"><span class="cite-head">' + head + '</span><ul>' + rows + '</ul></div>';
+  }
+
+  function ask(q) {
+    q = (q || '').trim();
+    if (!q) { toast('Type a question first'); input.focus(); return; }
+    addMessage(renderMarkdownLite(q), 'parent');
+    input.value = '';
+    var typingEl = document.getElementById('typing');
+    if (typingEl) typingEl.remove();
+    showTyping();
+    sendBtn.disabled = true;
+
+    var done = false;
+    function finish(html) {
+      if (done) return;
+      done = true;
+      var t = document.getElementById('typing');
+      if (t) t.remove();
+      sendBtn.disabled = false;
+      addMessage(html, 'advisor');
+    }
+
+    var timer = setTimeout(function () {
+      finish('The live advisor is taking too long, so this is the preview answer.<br><br>' + route(q));
+    }, 25000);
+
+    fetch(API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question: q.slice(0, 500) })
     }).then(function (r) {
       return r.json().then(function (data) { return { ok: r.ok, data: data }; });
     }).then(function (out) {
-      var t = document.getElementById('typing');
-      if (t) t.remove();
+      clearTimeout(timer);
       if (out.ok && out.data && out.data.answer) {
         var html = renderMarkdownLite(out.data.answer);
         if (out.data.citations && out.data.citations.length) {
@@ -434,28 +1597,95 @@
         } else if (out.data.sources && out.data.sources.length) {
           html += '<span class="cite">Answered from ' + out.data.sources.length + ' vault passages.</span>';
         }
-        addMessage(html, 'advisor');
+        finish(html);
       } else {
-        var err = (out.data && out.data.error) ? out.data.error : 'The advisor could not be reached.';
-        addMessage(err + '<br><br>' + route(q), 'advisor');
+        var err = (out.data && out.data.error) ? escapeHtml(out.data.error) : 'The advisor could not be reached.';
+        finish(err + '<br><br>' + route(q));
       }
     }).catch(function () {
-      var t = document.getElementById('typing');
-      if (t) t.remove();
-      addMessage('The live advisor could not be reached, so this is the preview answer.<br><br>' + route(q), 'advisor');
+      clearTimeout(timer);
+      finish('The live advisor could not be reached, so this is the preview answer.<br><br>' + route(q));
     });
   }
 
-  sendBtn.addEventListener('click', function () { ask(input.value.trim()); });
+  sendBtn.addEventListener('click', function () { ask(input.value); });
   input.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') ask(input.value.trim());
+    if (e.key === 'Enter') { e.preventDefault(); ask(input.value); }
   });
-  document.querySelectorAll('.chip').forEach(function (chip) {
-    chip.addEventListener('click', function () { ask(chip.textContent); });
+  $$('.chip').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      ask(chip.textContent);
+      openIM();
+    });
   });
 
-  addMessage('Ask me anything about raising a Deaf or hard of hearing child. I answer from the vault, and I cite where answers come from.', 'advisor');
-  addMessage('Safety note: if your question suggests a crisis, I put crisis resources first, before anything else.', 'advisor');
+  /* ---------------------------------------------------------------- transcript tools */
+  function transcriptText() {
+    return $$('.mline', transcript).map(function (l) { return l.innerText.replace(/\s+\n/g, '\n'); }).join('\n\n');
+  }
+  function lastAnswerText() {
+    var all = $$('.mline[data-who="advisor"]', transcript);
+    return all.length ? all[all.length - 1].innerText : 'No answer yet.';
+  }
+  function copyText(text, msg) {
+    if (!text) { toast('Nothing to copy yet'); return; }
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); toast(msg); } catch (e) { toast('Copy is blocked in this browser'); }
+      ta.remove();
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { toast(msg); }, fallback);
+    } else { fallback(); }
+  }
+  function saveConversation() {
+    var text = transcriptText();
+    if (!text) { toast('Nothing to save yet'); return; }
+    var blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'vaultadvisor-conversation.txt';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+    toast('Conversation saved');
+  }
+  function clearConversation() {
+    showModal({
+      title: 'Clear Conversation',
+      body: '<p>Remove every message from this window? This cannot be undone.</p>',
+      buttons: [
+        { label: 'Cancel' },
+        { label: 'Clear', primary: true, onClick: function () {
+            transcript.innerHTML = '';
+            addMessage('Conversation cleared.', 'sys');
+            input.focus();
+          } }
+      ]
+    });
+  }
+
+  /* ---------------------------------------------------------------- keyboard */
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      if (modal.classList.contains('open')) { closeModal(); return; }
+      closeMenu(); closeStart(); closeSnPick();
+      return;
+    }
+    if (e.altKey && !e.ctrlKey && !e.metaKey) {
+      var k = e.key.toLowerCase();
+      if (k === '1') { e.preventDefault(); openWin('buddylist'); }
+      else if (k === '2') { e.preventDefault(); openIM(); }
+      else if (k === 'p') { e.preventDefault(); openPrefs(); }
+    }
+  });
+
+  /* ---------------------------------------------------------------- boot */
+  paintPrefs();
+  paintWarn();
+  refreshChecks();
+  setScreenName(prefs.sn || 'VisitingParent');
 })();
 </script>
 </body>
