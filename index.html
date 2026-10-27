@@ -88,7 +88,8 @@
   .window.is-max { box-shadow: 2px 2px 0 #000; }
   .window.is-sized { overflow: hidden; }
   .window.is-sized .list,
-  .window.is-sized .transcript { flex: 1 1 auto; height: auto; min-height: 90px; }
+  .window.is-sized .transcript,
+  .window.is-sized #hwDetail { flex: 1 1 auto; height: auto; min-height: 90px; }
   .rz { position: absolute; z-index: 6; }
   .rz-e { top: 0; right: 0; width: 6px; height: 100%; cursor: ew-resize; }
   .rz-s { left: 0; bottom: 0; height: 6px; width: 100%; cursor: ns-resize; }
@@ -197,6 +198,30 @@
   }
   #buddylist .foot-btns { display: flex; gap: 3px; padding: 0 4px 5px; }
   #buddylist .foot-btns .btn3d { flex: 1; padding: 2px 0; text-align: center; }
+
+  /* ---------- How It Works window ---------- */
+  #howtowin { left: 850px; top: 48px; width: 390px; }
+  #howtowin .steps { margin: 4px; padding: 3px; }
+  .hw-step {
+    display: flex; align-items: flex-start; gap: 6px; width: 100%;
+    text-align: left; background: none; border: 0; padding: 4px 3px;
+    cursor: pointer; font-size: 11px;
+  }
+  .hw-step + .hw-step { border-top: 1px dotted #b0b0b0; }
+  .hw-step:hover, .hw-step:focus-visible { background: var(--title-a); color: #fff; }
+  .hw-step[aria-selected="true"] { background: var(--title-a); color: #fff; }
+  .hw-step .num { font-weight: bold; color: var(--aim-blue); min-width: 12px; }
+  .hw-step:hover .num, .hw-step[aria-selected="true"] .num { color: var(--aim-yellow); }
+  .hw-step .name { font-weight: bold; }
+  .hw-step .sum { display: block; color: #666; font-style: italic; font-weight: normal; }
+  .hw-step:hover .sum, .hw-step[aria-selected="true"] .sum { color: #dcdcff; }
+  #hwDetail {
+    margin: 0 4px 4px; padding: 6px;
+    min-height: 110px; height: 130px; overflow-y: auto; line-height: 1.45;
+  }
+  #hwDetail .bi-head { font-weight: bold; color: var(--aim-blue); margin-bottom: 3px; }
+  #howtowin .foot-btns { display: flex; gap: 3px; padding: 0 4px 5px; }
+  #howtowin .foot-btns .btn3d { flex: 1; padding: 2px 0; }
 
   /* ---------- IM window ---------- */
   #imwin { left: 278px; top: 48px; width: 560px; }
@@ -422,27 +447,15 @@
     <button class="sn-pick" type="button" id="snPick" aria-haspopup="true" aria-expanded="false" aria-label="Screen name options" title="Screen name options">&#9660;</button>
   </div>
   <div class="list inset" id="buddyListArea" aria-label="Buddies">
-    <button class="group-head" type="button" data-group="steps" aria-expanded="true"><span class="arrow">&#9660;</span> How It Works (4/4)</button>
-    <button class="buddy" type="button" data-buddy="curate" data-group="steps">
-      <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><g fill="#ffd700" stroke="#000" stroke-width="0.6"><circle cx="9.5" cy="2.5" r="1.9"/><path d="M8.8 4.2 L6.5 7.5 L4.5 6.5 L6 8.5 L4 12.5 L5.5 13.5 L7.2 9.8 L9 12 L8 14.5 L9.6 15.2 L11 11.8 L9.2 9.4 L10.8 7.2 L13.5 8.5 L14 7 L11 5.6 Z"/></g></svg>
-      <span class="sn-name">CurateStep</span>
-    </button>
-    <button class="buddy" type="button" data-buddy="connect" data-group="steps">
-      <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><g fill="#ffd700" stroke="#000" stroke-width="0.6"><circle cx="9.5" cy="2.5" r="1.9"/><path d="M8.8 4.2 L6.5 7.5 L4.5 6.5 L6 8.5 L4 12.5 L5.5 13.5 L7.2 9.8 L9 12 L8 14.5 L9.6 15.2 L11 11.8 L9.2 9.4 L10.8 7.2 L13.5 8.5 L14 7 L11 5.6 Z"/></g></svg>
-      <span class="sn-name">ConnectStep</span>
-    </button>
-    <button class="buddy" type="button" data-buddy="retrieve" data-group="steps">
-      <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><g fill="#ffd700" stroke="#000" stroke-width="0.6"><circle cx="9.5" cy="2.5" r="1.9"/><path d="M8.8 4.2 L6.5 7.5 L4.5 6.5 L6 8.5 L4 12.5 L5.5 13.5 L7.2 9.8 L9 12 L8 14.5 L9.6 15.2 L11 11.8 L9.2 9.4 L10.8 7.2 L13.5 8.5 L14 7 L11 5.6 Z"/></g></svg>
-      <span class="sn-name">RetrieveStep</span>
-    </button>
-    <button class="buddy" type="button" data-buddy="answer" data-group="steps">
-      <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><g fill="#ffd700" stroke="#000" stroke-width="0.6"><circle cx="9.5" cy="2.5" r="1.9"/><path d="M8.8 4.2 L6.5 7.5 L4.5 6.5 L6 8.5 L4 12.5 L5.5 13.5 L7.2 9.8 L9 12 L8 14.5 L9.6 15.2 L11 11.8 L9.2 9.4 L10.8 7.2 L13.5 8.5 L14 7 L11 5.6 Z"/></g></svg>
-      <span class="sn-name">AnswerStep</span>
-    </button>
     <button class="group-head" type="button" data-group="talk" aria-expanded="true"><span class="arrow">&#9660;</span> Talk To Me (1/1)</button>
     <button class="buddy" type="button" data-buddy="advisor" data-group="talk">
       <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><g fill="#ffd700" stroke="#000" stroke-width="0.6"><circle cx="9.5" cy="2.5" r="1.9"/><path d="M8.8 4.2 L6.5 7.5 L4.5 6.5 L6 8.5 L4 12.5 L5.5 13.5 L7.2 9.8 L9 12 L8 14.5 L9.6 15.2 L11 11.8 L9.2 9.4 L10.8 7.2 L13.5 8.5 L14 7 L11 5.6 Z"/></g></svg>
       <span class="sn-name"><b>VaultAdvisor</b></span> <span class="sn-note">(Online)</span>
+    </button>
+    <button class="group-head" type="button" data-group="about" aria-expanded="true"><span class="arrow">&#9660;</span> About the System (1/1)</button>
+    <button class="buddy" type="button" data-buddy="howto" data-group="about">
+      <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><g fill="#ffd700" stroke="#000" stroke-width="0.6"><circle cx="9.5" cy="2.5" r="1.9"/><path d="M8.8 4.2 L6.5 7.5 L4.5 6.5 L6 8.5 L4 12.5 L5.5 13.5 L7.2 9.8 L9 12 L8 14.5 L9.6 15.2 L11 11.8 L9.2 9.4 L10.8 7.2 L13.5 8.5 L14 7 L11 5.6 Z"/></g></svg>
+      <span class="sn-name">HowItWorks</span>
     </button>
     <button class="group-head" type="button" data-group="resources" aria-expanded="true"><span class="arrow">&#9660;</span> Resources (2/2)</button>
     <button class="buddy" type="button" data-buddy="call" data-group="resources">
@@ -457,7 +470,7 @@
   <div id="buddyinfo" class="inset" aria-live="polite">
     <div class="bi-head">Welcome, VisitingParent</div>
     A knowledge base your experts control, and the assistant that answers out of it.
-    Click a buddy in <b>How It Works</b> for info. IM <b>VaultAdvisor</b> to ask a question.
+    Open <b>How It Works</b> for the four steps. IM <b>VaultAdvisor</b> to ask a question.
   </div>
   <span class="rz rz-e" data-dir="e" aria-hidden="true"></span>
   <span class="rz rz-s" data-dir="s" aria-hidden="true"></span>
@@ -466,6 +479,44 @@
     <button class="btn3d" id="setupBtn" type="button" title="Open preferences">Setup</button>
     <button class="btn3d" id="imBtn" type="button" style="font-weight:bold;" title="Open the Instant Message window">IM</button>
     <button class="btn3d" id="infoBtn" type="button" title="About this preview">Info</button>
+  </div>
+</div>
+
+<!-- ============ HOW IT WORKS ============ -->
+<div class="window outset" id="howtowin" role="region" aria-label="How It Works">
+  <div class="titlebar">
+    <span class="tb-title">How It Works</span>
+    <span class="tb-btns">
+      <button class="tb-btn" type="button" data-win-act="min" data-win="howtowin" aria-label="Minimize How It Works" title="Minimize">_</button>
+      <button class="tb-btn" type="button" data-win-act="max" data-win="howtowin" aria-label="Maximize How It Works" title="Maximize">&#9633;</button>
+      <button class="tb-btn" type="button" data-win-act="close" data-win="howtowin" aria-label="Close How It Works" title="Close">&#10005;</button>
+    </span>
+  </div>
+  <div class="menubar" data-menu="howto">
+    <button type="button" aria-haspopup="true" aria-expanded="false"><u>F</u>ile</button>
+    <button type="button" aria-haspopup="true" aria-expanded="false"><u>H</u>elp</button>
+  </div>
+  <div class="steps inset" id="hwSteps" role="tablist" aria-label="The four steps">
+    <button class="hw-step" type="button" role="tab" aria-selected="true" data-step="0">
+      <span class="num">1</span><span><span class="name">Curate</span><span class="sum">read first</span></span>
+    </button>
+    <button class="hw-step" type="button" role="tab" aria-selected="false" data-step="1">
+      <span class="num">2</span><span><span class="name">Connect</span><span class="sum">one question, whole vault</span></span>
+    </button>
+    <button class="hw-step" type="button" role="tab" aria-selected="false" data-step="2">
+      <span class="num">3</span><span><span class="name">Retrieve</span><span class="sum">right passages only</span></span>
+    </button>
+    <button class="hw-step" type="button" role="tab" aria-selected="false" data-step="3">
+      <span class="num">4</span><span><span class="name">Answer</span><span class="sum">cited, human expert</span></span>
+    </button>
+  </div>
+  <div id="hwDetail" class="inset" aria-live="polite"></div>
+  <span class="rz rz-e" data-dir="e" aria-hidden="true"></span>
+  <span class="rz rz-s" data-dir="s" aria-hidden="true"></span>
+  <span class="rz rz-se" data-dir="se" aria-hidden="true"></span>
+  <div class="foot-btns">
+    <button class="btn3d" id="hwIM" type="button" style="font-weight:bold;" title="Open the Instant Message window">IM VaultAdvisor</button>
+    <button class="btn3d" id="hwClose" type="button" title="Close this window">Close</button>
   </div>
 </div>
 
@@ -521,6 +572,7 @@
     Start
   </button>
   <button class="task-item" type="button" data-win="buddylist" aria-label="Buddy List Window">Buddy List Window</button>
+  <button class="task-item" type="button" data-win="howtowin" aria-label="How It Works">How It Works</button>
   <button class="task-item" type="button" data-win="imwin" aria-label="VaultAdvisor Instant Message">VaultAdvisor - Instant Message</button>
   <button id="soundToggle" type="button" aria-pressed="true" title="Toggle sounds">&#128266; Sounds</button>
   <button id="clock" type="button" title="Show the date, toggle 12 and 24 hour clock">--:--</button>
@@ -756,6 +808,20 @@
         { sep: true },
         { t: 'Sign Off', a: 'signoff' }
       ] }
+    ],
+    howto: [
+      { label: 'File', items: [
+        { t: 'IM VaultAdvisor', a: 'im' },
+        { t: 'Print These Steps', a: 'print' },
+        { sep: true },
+        { t: 'Close Window', a: 'closehowto' }
+      ] },
+      { label: 'Help', items: [
+        { t: 'Safety and Crisis Resources', a: 'safety' },
+        { t: 'Keyboard Shortcuts', a: 'keys' },
+        { sep: true },
+        { t: 'About Parent Advisor', a: 'about' }
+      ] }
     ]
   };
 
@@ -859,7 +925,8 @@
       case 'consult': window.open(CONSULT, '_blank', 'noopener'); break;
       case 'live': window.open(SITE, '_blank', 'noopener'); break;
       case 'info': showInfo(); break;
-      case 'howto': showHowTo(); break;
+      case 'howto': openHowTo(); break;
+      case 'closehowto': setWin('howtowin', 'closed'); break;
       case 'safety': showSafety(); break;
       case 'keys': showKeys(); break;
       case 'about': showAbout(); break;
@@ -1176,7 +1243,7 @@
     var sn = $('#snLabel').textContent || 'VisitingParent';
     buddyInfo.innerHTML = '<div class="bi-head">Welcome, ' + escapeHtml(sn) + '</div>' +
       'A knowledge base your experts control, and the assistant that answers out of it. ' +
-      'Click a buddy in <b>How It Works</b> for info. IM <b>VaultAdvisor</b> to ask a question.';
+      'Open <b>How It Works</b> for the four steps. IM <b>VaultAdvisor</b> to ask a question.';
   }
   function openSnPick() {
     var isOpen = !!snDropdown;
@@ -1272,14 +1339,55 @@
       'Preview derived from the vault (1,300+ notes).<br><br>' +
       '<button class="linkish" type="button" data-act="about">More about this preview</button>';
   }
-  function showHowTo() {
-    openWin('buddylist');
-    buddyInfo.innerHTML = '<div class="bi-head">How It Works</div>' +
-      '<b>1 Curate.</b> People who know the field write it. Nothing goes in until it is read.<br>' +
-      '<b>2 Connect.</b> One question reaches the whole vault.<br>' +
-      '<b>3 Retrieve.</b> A question pulls out the right passages. The model sees nothing else.<br>' +
-      '<b>4 Answer.</b> Replies cite the notes behind them, and a human stays the expert.';
+  /* how it works window */
+  var STEPS = [
+    { name: 'Curate', sum: 'read first',
+      body: 'People who know the field write it. Nothing goes in until it is read. Written and checked by hand.' },
+    { name: 'Connect', sum: 'one question, whole vault',
+      body: 'One question reaches the whole vault. Notes are written the way families type. The vault stays on your machines.' },
+    { name: 'Retrieve', sum: 'right passages only',
+      body: 'A question pulls out the right passages. The model sees nothing else. A silent vault gets an honest answer.' },
+    { name: 'Answer', sum: 'cited, human expert',
+      body: 'Replies cite the notes behind them. Clinical questions go to a person. Safety paths fire before the model. A human is always the expert.' }
+  ];
+  var hwDetail = $('#hwDetail');
+  var currentStep = 0;
+
+  function selectStep(i, focusRow) {
+    var idx = Math.max(0, Math.min(STEPS.length - 1, i));
+    currentStep = idx;
+    $$('.hw-step').forEach(function (b, n) {
+      b.setAttribute('aria-selected', n === idx ? 'true' : 'false');
+      b.setAttribute('tabindex', n === idx ? '0' : '-1');
+    });
+    var s = STEPS[idx];
+    hwDetail.innerHTML = '<div class="bi-head">STEP ' + (idx + 1) + ': ' + s.name + '</div>' +
+      s.body + '<div style="margin-top:6px;color:#666;font-style:italic;">' + s.sum + '</div>';
+    if (focusRow) {
+      var row = $('.hw-step[data-step="' + idx + '"]');
+      if (row) row.focus();
+    }
   }
+
+  $$('.hw-step').forEach(function (b) {
+    b.addEventListener('click', function () {
+      selectStep(parseInt(b.getAttribute('data-step'), 10), false);
+      blip();
+    });
+    b.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); selectStep(currentStep + 1, true); }
+      else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); selectStep(currentStep - 1, true); }
+      else if (e.key === 'Home') { e.preventDefault(); selectStep(0, true); }
+      else if (e.key === 'End') { e.preventDefault(); selectStep(STEPS.length - 1, true); }
+    });
+  });
+
+  function openHowTo(step) {
+    openWin('howtowin');
+    if (typeof step === 'number') selectStep(step, false);
+  }
+  $('#hwIM').addEventListener('click', openIM);
+  $('#hwClose').addEventListener('click', function () { setWin('howtowin', 'closed'); });
   function showSafety() {
     showModal({
       title: 'Safety and Crisis Resources',
@@ -1302,6 +1410,7 @@
         '<li><b>Enter</b> sends a message.</li>' +
         '<li><b>Alt 1</b> opens the Buddy List.</li>' +
         '<li><b>Alt 2</b> opens the Instant Message window.</li>' +
+        '<li><b>Alt 3</b> opens How It Works.</li>' +
         '<li><b>Alt P</b> opens Preferences.</li>' +
         '<li><b>Esc</b> closes a menu or dialog.</li>' +
         '<li><b>Tab</b> moves through every control on the page.</li>' +
@@ -1343,6 +1452,10 @@
         var s = stepInfo[key];
         buddyInfo.innerHTML = '<div class="bi-head">' + s.head + '</div>' + s.body +
           '<div style="margin-top:5px;color:#666;font-style:italic;">' + s.sub + '</div>';
+        blip();
+      } else if (key === 'howto') {
+        buddyInfo.innerHTML = '<div class="bi-head">HowItWorks</div>Four steps, from the first note to the cited answer.';
+        openHowTo();
         blip();
       } else if (key === 'advisor') {
         buddyInfo.innerHTML = '<div class="bi-head">VaultAdvisor</div>Online and answering from the vault. Ask me anything about raising a Deaf or hard of hearing child. I cite where answers come from.';
@@ -1467,6 +1580,7 @@
     addMessage('Ask me anything about raising a Deaf or hard of hearing child. I answer from the vault, and I cite where answers come from.', 'advisor');
     addMessage('Safety note: if your question suggests a crisis, I put crisis resources first, before anything else.', 'advisor');
     setWin('buddylist', 'open');
+    setWin('howtowin', 'open');
     setWin('imwin', 'open');
     input.focus();
   }
@@ -1478,7 +1592,7 @@
   function logOff() {
     closeModal();
     signon.style.display = 'flex';
-    ['buddylist', 'imwin'].forEach(function (id) { setWin(id, 'closed'); });
+    ['buddylist', 'howtowin', 'imwin'].forEach(function (id) { setWin(id, 'closed'); });
     transcript.innerHTML = '';
     $('#snInput').value = prefs.sn || 'VisitingParent';
     $('#snInput').focus();
@@ -1750,6 +1864,7 @@
       var k = e.key.toLowerCase();
       if (k === '1') { e.preventDefault(); openWin('buddylist'); }
       else if (k === '2') { e.preventDefault(); openIM(); }
+      else if (k === '3') { e.preventDefault(); openHowTo(); }
       else if (k === 'p') { e.preventDefault(); openPrefs(); }
     }
   });
@@ -1759,6 +1874,14 @@
   paintWarn();
   refreshChecks();
   setScreenName(prefs.sn || 'VisitingParent');
+  selectStep(0, false);
+  if (window.innerWidth > 820) {
+    var hw = $('#howtowin');
+    var need = 850 + hw.offsetWidth + 8;
+    if (need > window.innerWidth) {
+      hw.style.left = Math.max(8, window.innerWidth - hw.offsetWidth - 8) + 'px';
+    }
+  }
 })();
 </script>
 </body>
