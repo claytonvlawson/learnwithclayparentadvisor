@@ -65,11 +65,17 @@
   #signon .dialog { width: 300px; }
   #signon .body { padding: 14px; }
   #signon .brand {
-    display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+    text-align: center; margin-bottom: 10px;
     background: var(--title-a); padding: 6px 8px;
   }
-  #signon .brand .word { font-weight: bold; font-size: 20px; color: #fff; font-style: italic; }
-  #signon .brand .brand-logo { width: auto; height: 33px; display: block; flex-shrink: 0; }
+  #signon .brand .word {
+    display: inline-block; vertical-align: middle; text-align: left;
+    font-weight: bold; font-size: 20px; color: #fff; font-style: italic;
+  }
+  #signon .brand .brand-logo {
+    display: inline-block; vertical-align: middle;
+    width: auto; height: 33px; margin-right: 8px;
+  }
   #signon .brand .word span { color: var(--aim-yellow); }
   #signon label { display: block; margin: 8px 0 2px; font-weight: bold; }
   #signon input {
@@ -78,7 +84,6 @@
   }
   #signon .row { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
   #signon .ver { color: #333; }
-  #signon .pitch { margin-top: 10px; color: #222; line-height: 1.45; }
 
   /* ---------- Windows ---------- */
   .window {
@@ -412,7 +417,7 @@
     <div class="body">
       <div class="brand">
         <img class="brand-logo" src="aol-figure.png" alt="AOL running figure" width="30" height="33">
-        <div class="word"><span>Parent Advisor</span> Online</div>
+        <span class="word"><span>Parent Advisor</span><br>Online</span>
       </div>
       <label for="snInput">ScreenName</label>
       <input id="snInput" value="VisitingParent" maxlength="16" autocomplete="off" spellcheck="false">
@@ -423,7 +428,6 @@
         <span class="ver">Version: 5.9.3702</span>
         <button class="btn3d" id="signOnBtn" style="font-weight:bold;padding:4px 22px;">Sign On</button>
       </div>
-      <div class="pitch">A knowledge base your experts control, and the assistant that answers out of it. Preview derived from the vault (1,300+ notes).</div>
     </div>
   </div>
 </div>
