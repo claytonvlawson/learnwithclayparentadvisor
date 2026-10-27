@@ -298,7 +298,11 @@
     border-top: 2px solid; border-color: var(--chrome-hi);
     display: flex; align-items: center; gap: 4px; padding: 2px 4px;
   }
-  #startBtn { font-weight: bold; display: flex; align-items: center; gap: 4px; }
+  #startBtn { font-weight: bold; display: flex; align-items: center; gap: 4px; padding: 2px 9px 2px 4px; line-height: 1; }
+  #startBtn .start-logo {
+    display: block; height: 18px; width: auto;
+    flex: 0 0 auto; image-rendering: pixelated;
+  }
   .task-item {
     flex: 0 1 180px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
     padding: 3px 8px;
@@ -573,7 +577,7 @@
 <!-- ============ TASKBAR ============ -->
 <div id="taskbar">
   <button class="btn3d" id="startBtn" type="button" aria-haspopup="true" aria-expanded="false">
-    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><g fill="#ffd700" stroke="#000" stroke-width="0.6"><circle cx="9.5" cy="2.5" r="1.9"/><path d="M8.8 4.2 L6.5 7.5 L4.5 6.5 L6 8.5 L4 12.5 L5.5 13.5 L7.2 9.8 L9 12 L8 14.5 L9.6 15.2 L11 11.8 L9.2 9.4 L10.8 7.2 L13.5 8.5 L14 7 L11 5.6 Z"/></g></svg>
+    <img class="start-logo" src="win-flag.png" alt="" width="15" height="18" aria-hidden="true">
     Start
   </button>
   <button class="task-item" type="button" data-win="buddylist" aria-label="Buddy List Window">Buddy List Window</button>
