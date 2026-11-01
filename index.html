@@ -24,8 +24,12 @@
   body {
     font-family: Tahoma, 'MS Sans Serif', Geneva, Verdana, 'Segoe UI',
       'Apple SD Gothic Neo', 'Malgun Gothic', 'PingFang SC', 'Hiragino Sans GB',
-      'Microsoft YaHei', 'Geeza Pro', 'Noto Naskh Arabic', 'Leelawadee UI',
-      'Thonburi', sans-serif;
+      'Microsoft YaHei', 'Hiragino Sans', 'Yu Gothic', 'Meiryo',
+      'Geeza Pro', 'Noto Naskh Arabic', 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq',
+      'Nirmala UI', 'Noto Sans Devanagari', 'Kohinoor Devanagari', 'Mangal',
+      'Noto Sans Bengali', 'Shonar Bangla', 'Vrinda',
+      'Kefa', 'Nyala', 'Noto Sans Ethiopic',
+      'Leelawadee UI', 'Thonburi', sans-serif;
     font-size: 11px;
     background: var(--desktop);
     color: #000;
@@ -477,15 +481,11 @@
   html[dir="rtl"] #credit { right: auto; left: 8px; text-align: left; }
   html[dir="rtl"] .cites ul { padding-right: 0; }
 
-  /* Arabic at 11px in a 1990s UI is hard to read; nudge the small chrome up */
-  html[lang="ar"] .transcript,
-  html[lang="ar"] .list,
-  html[lang="ar"] .steps,
-  html[lang="ar"] .menubar > button,
-  html[lang="ar"] .menu button,
-  html[lang="ar"] #signon .dialog,
-  html[lang="ar"] .credits,
-  html[lang="ar"] #taskbar > button { font-size: 12px; }
+  /* Non-Latin scripts at 11px in a 1990s UI are hard to read; nudge the small
+     chrome up and let the stacks above supply the glyphs. */
+  html:is([lang="ar"],[lang="ur"],[lang="hi"],[lang="ne"],[lang="bn"],[lang="am"],[lang="ja"])
+    :is(.transcript, .list, .steps, .menubar > button, .menu button,
+        #signon .dialog, #modal .body, #taskbar > button, select.langsel) { font-size: 12px; }
 </style>
 </head>
 <body>

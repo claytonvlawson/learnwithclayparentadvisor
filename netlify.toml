@@ -8,3 +8,10 @@
     X-Frame-Options = "SAMEORIGIN"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
+
+# the translation table is large and changes only when a language does, so let
+# repeat visitors reuse it (revalidate inside the hour, so a deploy is not stale)
+[[headers]]
+  for = "/i18n.js"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, must-revalidate"
