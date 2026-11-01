@@ -22,7 +22,10 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; }
   body {
-    font-family: Tahoma, 'MS Sans Serif', Geneva, Verdana, sans-serif;
+    font-family: Tahoma, 'MS Sans Serif', Geneva, Verdana, 'Segoe UI',
+      'Apple SD Gothic Neo', 'Malgun Gothic', 'PingFang SC', 'Hiragino Sans GB',
+      'Microsoft YaHei', 'Geeza Pro', 'Noto Naskh Arabic', 'Leelawadee UI',
+      'Thonburi', sans-serif;
     font-size: 11px;
     background: var(--desktop);
     color: #000;
@@ -243,6 +246,23 @@
   .sys { color: #808080; font-style: italic; }
   .mline ul { padding-left: 18px; margin: 3px 0; }
   .mline strong, .mline b { color: #8b0000; }
+  /* answer links: blue and clickable, per the transcript's own convention */
+  .mline a { color: var(--aim-blue); text-decoration: underline; }
+  .mline a:hover, .mline a:focus { color: var(--aim-red); }
+  /* markdown tables arrive as stacked resource blocks, never raw pipes */
+  .mline .res-list { margin: 5px 0 6px; }
+  .mline .res {
+    padding: 3px 0 4px 8px; margin-bottom: 3px;
+    border-left: 2px solid #c9c9c9;
+  }
+  .mline .res-name, .mline a.res-name {
+    color: #8b0000; font-weight: bold; text-decoration: underline;
+  }
+  .mline a.res-name:hover, .mline a.res-name:focus { color: var(--aim-blue); }
+  .mline .res-desc { display: block; color: #000; margin-top: 1px; }
+  .mline .res-how { display: block; margin-top: 2px; font-size: 11px; color: #444; line-height: 1.45; }
+  .mline .res-how a { font-size: 11px; }
+  .mline .res-how b, .mline .res-desc b, .mline .res-how strong { color: #000; }
   .mline .cite {
     display: block; margin-top: 5px; font-size: 10px;
     color: #666; font-style: italic;
@@ -276,12 +296,23 @@
     border: 1px solid #808080; display: inline-block;
   }
   #imwin .warnmeter i { display: block; height: 100%; width: 0%; background: var(--aim-red); transition: width .2s; }
-  #imwin .inputrow { display: flex; gap: 4px; margin: 2px 4px 4px; }
+  #imwin .inputrow { display: flex; align-items: flex-end; gap: 4px; margin: 2px 4px 4px; }
   #chatInput {
-    flex: 1; padding: 3px 5px; font-family: inherit; font-size: 11px;
+    flex: 1; min-height: 22px; max-height: 66px; overflow-y: auto;
+    padding: 3px 5px; font-family: inherit; font-size: 11px; line-height: 1.4;
+    background: #fff; cursor: text;
     border: 2px solid; border-color: var(--chrome-lo) var(--chrome-hi) var(--chrome-hi) var(--chrome-lo);
   }
   #chatInput:focus { outline: none; }
+  #chatInput:empty::before { content: attr(data-placeholder); color: #808080; }
+  .dropdown.open.picker { display: grid; grid-template-columns: repeat(6, 26px); gap: 2px; padding: 4px; min-width: 0; }
+  .picker .smile {
+    width: 26px; height: 26px; font-size: 16px; line-height: 1;
+    background: none; border: 0; cursor: pointer; padding: 0; text-align: center;
+  }
+  .picker .smile:hover, .picker .smile:focus { background: var(--title-a); outline: none; }
+  .picker .swatch { width: 26px; height: 26px; border: 1px solid #000; cursor: pointer; padding: 0; }
+  .picker .swatch:hover, .picker .swatch:focus { outline: 2px solid var(--title-a); outline-offset: 1px; }
   #sendBtn { font-weight: bold; padding: 3px 18px; }
   #imwin .chips { margin: 0 4px 5px; padding: 3px 5px; line-height: 1.7; }
   #imwin .chips .lbl { color: #444; font-weight: bold; }
@@ -298,14 +329,22 @@
     border-top: 2px solid; border-color: var(--chrome-hi);
     display: flex; align-items: center; gap: 4px; padding: 2px 4px;
   }
-  #startBtn { font-weight: bold; display: flex; align-items: center; gap: 4px; padding: 2px 9px 2px 4px; line-height: 1; }
+  /* every taskbar button shares one height, one line height, one padding box,
+     so Start, the task items, Sounds, and the clock line up edge to edge */
+  #taskbar > button {
+    height: 22px; flex: 0 0 auto;
+    display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+    padding: 0 8px; margin: 0; line-height: 1; font-size: 11px;
+    overflow: hidden; white-space: nowrap;
+  }
+  #taskbar > #startBtn { font-weight: bold; padding: 0 10px 0 5px; }
   #startBtn .start-logo {
-    display: block; height: 18px; width: auto;
+    display: block; height: 14px; width: auto;
     flex: 0 0 auto; image-rendering: pixelated;
   }
   .task-item {
-    flex: 0 1 180px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
-    padding: 3px 8px;
+    flex: 0 1 180px; overflow: hidden; text-overflow: ellipsis;
+    justify-content: flex-start;
     background: var(--chrome);
     border: 2px solid; border-color: #fff var(--chrome-lo) var(--chrome-lo) #fff;
     cursor: pointer; text-align: left;
@@ -313,7 +352,7 @@
   .task-item.active { border-color: var(--chrome-lo) #fff #fff var(--chrome-lo); background: #b8b8b8; font-weight: bold; }
   .task-item.is-hidden { display: none; }
   #clock, #soundToggle {
-    padding: 3px 8px; background: var(--chrome); cursor: pointer;
+    background: var(--chrome); cursor: pointer;
     border: 2px solid; border-color: var(--chrome-lo) var(--chrome-hi) var(--chrome-hi) var(--chrome-lo);
   }
   #clock { margin-left: auto; }
@@ -410,6 +449,43 @@
     #imwin .transcript { height: auto; max-height: none; overflow: visible; border: 0; }
     #buddylist { display: none; }
   }
+
+  /* ---------- Language picker ---------- */
+  .lang-bar {
+    margin: 0 4px 4px; padding: 2px 4px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .lang-bar label { font-weight: bold; }
+  select.langsel {
+    font-family: inherit; font-size: 11px; padding: 1px 2px;
+    background: #fff; color: #000; min-width: 0; max-width: 100%;
+    border: 2px solid;
+    border-color: var(--chrome-lo) var(--chrome-hi) var(--chrome-hi) var(--chrome-lo);
+  }
+  select.langsel:focus-visible { outline: 2px dotted #000; outline-offset: 1px; }
+  #signon .lang-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 6px;
+    margin-top: 9px; padding-top: 7px; border-top: 1px solid #808080;
+  }
+  #signon .lang-row label { margin: 0; }
+  #signon .lang-row select { flex: 1 1 auto; min-width: 0; }
+  .pref-row select { flex: 1 1 auto; min-width: 0; }
+
+  /* right to left languages: mirror the text without moving the windows */
+  html[dir="rtl"] .menu button { text-align: right; }
+  html[dir="rtl"] .menu .check { left: auto; right: 6px; }
+  html[dir="rtl"] #credit { right: auto; left: 8px; text-align: left; }
+  html[dir="rtl"] .cites ul { padding-right: 0; }
+
+  /* Arabic at 11px in a 1990s UI is hard to read; nudge the small chrome up */
+  html[lang="ar"] .transcript,
+  html[lang="ar"] .list,
+  html[lang="ar"] .steps,
+  html[lang="ar"] .menubar > button,
+  html[lang="ar"] .menu button,
+  html[lang="ar"] #signon .dialog,
+  html[lang="ar"] .credits,
+  html[lang="ar"] #taskbar > button { font-size: 12px; }
 </style>
 </head>
 <body>
@@ -422,6 +498,10 @@
       <div class="brand">
         <img class="brand-logo" src="aol-figure.png" alt="AOL running figure" width="30" height="33">
         <span class="word"><span>Parent Advisor</span><br>Online</span>
+      </div>
+      <div class="lang-row">
+        <label for="langPickSignon"><span aria-hidden="true">&#127760;</span> Language</label>
+        <select class="langsel" id="langPickSignon" aria-label="Language"></select>
       </div>
       <label for="snInput">ScreenName</label>
       <input id="snInput" value="VisitingParent" maxlength="16" autocomplete="off" spellcheck="false">
@@ -454,6 +534,10 @@
   <div class="sn-bar inset">
     <span><b>ScreenName:</b> <span id="snLabel">VisitingParent</span></span>
     <button class="sn-pick" type="button" id="snPick" aria-haspopup="true" aria-expanded="false" aria-label="Screen name options" title="Screen name options">&#9660;</button>
+  </div>
+  <div class="lang-bar inset">
+    <label for="langPickBuddy"><span aria-hidden="true">&#127760;</span> Language</label>
+    <select class="langsel" id="langPickBuddy" aria-label="Language"></select>
   </div>
   <div class="list inset" id="buddyListArea" aria-label="Buddies">
     <button class="group-head" type="button" data-group="talk" aria-expanded="true"><span class="arrow">&#9660;</span> Talk To Me (1/1)</button>
@@ -548,10 +632,12 @@
   </div>
   <div class="transcript inset" id="chatTranscript" role="log" aria-live="polite" tabindex="0" aria-label="Conversation with VaultAdvisor"></div>
   <div class="toolbar">
-    <button class="tbtn" type="button" title="Bold" aria-label="Bold" data-format="bold">B</button>
-    <button class="tbtn" type="button" title="Italic" aria-label="Italic" data-format="italic" style="font-style:italic;">I</button>
-    <button class="tbtn" type="button" title="Underline" aria-label="Underline" data-format="underline" style="text-decoration:underline;">U</button>
-    <button class="tbtn" type="button" id="smileyBtn" title="Smiley" aria-label="Insert a smiley">&#9786;</button>
+    <button class="tbtn" type="button" title="Bold" aria-label="Bold" aria-pressed="false" data-format="bold">B</button>
+    <button class="tbtn" type="button" title="Italic" aria-label="Italic" aria-pressed="false" data-format="italic" style="font-style:italic;">I</button>
+    <button class="tbtn" type="button" title="Underline" aria-label="Underline" aria-pressed="false" data-format="underline" style="text-decoration:underline;">U</button>
+    <button class="tbtn" type="button" title="Strikethrough" aria-label="Strikethrough" aria-pressed="false" data-format="strike" style="text-decoration:line-through;">S</button>
+    <button class="tbtn" type="button" id="colorBtn" title="Text color" aria-label="Text color" aria-haspopup="true" aria-expanded="false" style="border-bottom:3px solid #000;">A</button>
+    <button class="tbtn" type="button" id="smileyBtn" title="Insert a smiley" aria-label="Insert a smiley" aria-haspopup="true" aria-expanded="false">&#9786;</button>
     <button class="tbtn" type="button" id="warnBtn" title="Send a warning" aria-label="Send a warning" style="color:#8b0000;">&#9888;</button>
     <span class="warnwrap">
       <span>Warn</span>
@@ -560,7 +646,9 @@
     </span>
   </div>
   <div class="inputrow">
-    <input type="text" id="chatInput" placeholder="Ask a question the way you would type it..." aria-label="Ask the Advisor" autocomplete="off">
+    <div id="chatInput" contenteditable="true" role="textbox" aria-multiline="false"
+         aria-label="Ask the Advisor" spellcheck="true"
+         data-placeholder="Ask a question the way you would type it..."></div>
     <button class="btn3d" id="sendBtn" type="button">Send</button>
   </div>
   <span class="rz rz-e" data-dir="e" aria-hidden="true"></span>
@@ -597,6 +685,7 @@
   Built by Clayton Lawson &middot; <a href="https://learnwithclay.ai" target="_blank" rel="noopener">learnwithclay.ai</a>
 </div>
 
+<script src="i18n.js"></script>
 <script>
 (function () {
   'use strict';
@@ -607,8 +696,26 @@
   var CONSULT = 'https://calendly.com/clayton-learnwithclay';
   var API = SITE + '/api/parent/chat';
 
+  /* One stable id per browser, so the advisor's question budget follows the
+     visitor rather than the network they happen to share with a whole school
+     or household. 8-64 chars of [A-Za-z0-9._-]; anything else is ignored by
+     the server and it falls back to counting the IP. */
+  var SESSION_ID = (function () {
+    var KEY = 'pa-session', s = '';
+    try {
+      s = localStorage.getItem(KEY) || '';
+      if (!/^[A-Za-z0-9._-]{8,64}$/.test(s)) {
+        s = 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+        localStorage.setItem(KEY, s);
+      }
+    } catch (e) {
+      s = s || 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+    }
+    return s;
+  })();
+
   /* ---------------------------------------------------------------- prefs */
-  var DEFAULTS = { sounds: true, cites: true, clock24: false, size: 'normal', sn: 'VisitingParent' };
+  var DEFAULTS = { sounds: true, cites: true, clock24: false, size: 'normal', sn: 'VisitingParent', lang: '' };
   var prefs = (function () {
     try {
       var raw = localStorage.getItem('pa-prefs');
@@ -624,6 +731,67 @@
     try { localStorage.setItem('pa-prefs', JSON.stringify(prefs)); } catch (e) {}
   }
 
+  /* ---------------------------------------------------------------- language
+     The page ships in English; i18n.js holds the translation table and walks
+     the DOM swapping text in place. The visitor's choice is persisted, seeds
+     from the browser locale, and is also sent with every question so the
+     advisor answers in the same language. */
+  var i18n = window.PAi18n;
+
+  function detectLang() {
+    if (prefs.lang && i18n.metaFor(prefs.lang).code === prefs.lang) return prefs.lang;
+    var want = '';
+    try {
+      want = String((navigator.languages && navigator.languages[0]) || navigator.language || 'en');
+    } catch (e) { want = 'en'; }
+    want = want.toLowerCase();
+    if (want.indexOf('zh') === 0) return 'zh';
+    var two = want.slice(0, 2);
+    return i18n.metaFor(two).code === two ? two : 'en';
+  }
+
+  function buildLangSelect(sel) {
+    if (!sel) return;
+    sel.innerHTML = '';
+    i18n.LANGS.forEach(function (l) {
+      var o = document.createElement('option');
+      o.value = l.code;
+      o.textContent = l.native;
+      sel.appendChild(o);
+    });
+    sel.value = i18n.lang();
+  }
+
+  var langSelects = ['langPickSignon', 'langPickBuddy', 'prefLang'].map(function (id) {
+    return document.getElementById(id);
+  });
+
+  function paintLangSelects() {
+    langSelects.forEach(function (sel) {
+      if (!sel) return;
+      if (!sel.options.length) buildLangSelect(sel);
+      if (sel.value !== i18n.lang()) sel.value = i18n.lang();
+    });
+  }
+
+  function setLang(code, announce) {
+    var m = i18n.metaFor(code);
+    i18n.set(m.code);
+    prefs.lang = m.code;
+    savePrefs();
+    paintLangSelects();
+    // canned preview answers are shipped per language, so re-render the ones
+    // already on screen instead of trying to translate them in place
+    $$('[data-canned]').forEach(function (el) {
+      el.innerHTML = i18n.canned(el.getAttribute('data-canned'));
+    });
+    i18n.apply(document.body);
+    paintGreeting(false);
+    paintSound();
+    if (announce) toast(i18n.tpl('languageChanged', { name: m.native }));
+  }
+
+
   var soundOn = prefs.sounds;
 
   var transcript = $('#chatTranscript');
@@ -636,7 +804,7 @@
   /* ---------------------------------------------------------------- toast */
   var toastEl = $('#toast'), toastTimer = null;
   function toast(msg) {
-    toastEl.textContent = msg;
+    toastEl.textContent = i18n.t(msg);
     toastEl.classList.add('show');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 2600);
@@ -692,8 +860,10 @@
 
   var soundToggle = $('#soundToggle');
   function paintSound() {
-    soundToggle.textContent = (prefs.sounds ? '\uD83D\uDD0A' : '\uD83D\uDD07') + ' Sounds';
+    soundToggle.innerHTML = '<span aria-hidden="true">' + (prefs.sounds ? '\uD83D\uDD0A' : '\uD83D\uDD07') + '</span>' +
+      ' <span>Sounds</span>';
     soundToggle.setAttribute('aria-pressed', prefs.sounds ? 'true' : 'false');
+    i18n.apply(soundToggle);
   }
   soundToggle.addEventListener('click', function () {
     prefs.sounds = !prefs.sounds; soundOn = prefs.sounds; savePrefs(); paintSound();
@@ -735,7 +905,7 @@
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'btn3d';
-      btn.textContent = b.label;
+      btn.textContent = i18n.t(b.label);
       if (b.primary) btn.style.fontWeight = 'bold';
       btn.addEventListener('click', function () {
         var keep = b.onClick && b.onClick(modal) === false;
@@ -745,6 +915,7 @@
     });
     modal.classList.add('open');
     if (opts.onOpen) opts.onOpen(modal);
+    i18n.apply(modal);
     var first = $('.body button, .body input, .foot .btn3d', modal);
     if (first) first.focus();
   }
@@ -805,7 +976,9 @@
         { t: 'Bold', a: 'bold' },
         { t: 'Italic', a: 'italic' },
         { t: 'Underline', a: 'underline' },
+        { t: 'Strikethrough', a: 'strike' },
         { sep: true },
+        { t: 'Text Color...', a: 'textcolor' },
         { t: 'Smiley', a: 'smiley' },
         { t: 'Insert a Link', a: 'insertlink' },
         { t: "Insert Today's Date", a: 'insertdate' }
@@ -945,7 +1118,7 @@
       case 'closeim': setWin('imwin', 'closed'); break;
       case 'copyall': copyText(transcriptText(), 'Conversation copied'); break;
       case 'copylast': copyText(lastAnswerText(), 'Last answer copied'); break;
-      case 'clearinput': input.value = ''; input.focus(); toast('Input cleared'); break;
+      case 'clearinput': input.innerHTML = ''; input.focus(); toast('Input cleared'); break;
       case 'size-normal': prefs.size = 'normal'; savePrefs(); paintPrefs(); refreshChecks(); toast('Normal text'); break;
       case 'size-large': prefs.size = 'large'; savePrefs(); paintPrefs(); refreshChecks(); toast('Large text'); break;
       case 'cites':
@@ -960,9 +1133,11 @@
       case 'bold': applyFormat('bold'); break;
       case 'italic': applyFormat('italic'); break;
       case 'underline': applyFormat('underline'); break;
-      case 'smiley': insertSmiley(); break;
+      case 'strike': applyFormat('strike'); break;
+      case 'textcolor': openPicker('color'); break;
+      case 'smiley': openPicker('smiley'); break;
       case 'insertlink': insertLink(); break;
-      case 'insertdate': insertAtCursor(new Date().toLocaleDateString()); break;
+      case 'insertdate': insertTextAtCaret(new Date().toLocaleDateString()); break;
       default: break;
     }
   }
@@ -1232,7 +1407,7 @@
   });
 
   document.addEventListener('click', function () {
-    closeMenu(); closeStart(); closeSnPick();
+    closeMenu(); closeStart(); closeSnPick(); closePickers();
   });
 
   /* ---------------------------------------------------------------- screen name */
@@ -1250,9 +1425,13 @@
   }
   function welcome() {
     var sn = $('#snLabel').textContent || 'VisitingParent';
-    buddyInfo.innerHTML = '<div class="bi-head">Welcome, ' + escapeHtml(sn) + '</div>' +
-      'A knowledge base your experts control, and the assistant that answers out of it. ' +
-      'Open <b>How It Works</b> for the four steps. IM <b>VaultAdvisor</b> to ask a question.';
+    // built in English on purpose: the i18n pass translates the whole panel and
+    // keeps the English source, so a later language switch can redo it
+    buddyInfo.innerHTML = '<div class="bi-head">' + escapeHtml('Welcome, ' + sn) + '</div>' +
+      '<span>A knowledge base your experts control, and the assistant that answers out of it.</span> ' +
+      '<span>Open</span> <b>How It Works</b> <span>for the four steps.</span> ' +
+      '<span>IM</span> <b>VaultAdvisor</b> <span>to ask a question.</span>';
+    i18n.apply(buddyInfo);
   }
   function openSnPick() {
     var isOpen = !!snDropdown;
@@ -1318,6 +1497,8 @@
     showModal({
       title: 'Preferences',
       body:
+        '<div class="pref-row"><label for="prefLang" style="min-width:86px;font-weight:bold;">Language</label>' +
+        '<select class="langsel" id="prefLang" aria-label="Language"></select></div>' +
         '<div class="pref-row"><input type="checkbox" id="prefSounds"' + (prefs.sounds ? ' checked' : '') + '><label for="prefSounds">Sounds</label></div>' +
         '<div class="pref-row"><input type="checkbox" id="prefCites"' + (prefs.cites ? ' checked' : '') + '><label for="prefCites">Show citation lines under answers</label></div>' +
         '<div class="pref-row"><input type="checkbox" id="prefClock"' + (prefs.clock24 ? ' checked' : '') + '><label for="prefClock">24 hour clock in the taskbar</label></div>' +
@@ -1334,9 +1515,15 @@
             savePrefs(); paintPrefs(); tickClock(); refreshChecks();
             setScreenName($('#prefSN', m).value);
             welcome();
+            if ($('#prefLang', m)) setLang($('#prefLang', m).value, false);
             toast('Preferences applied');
           } }
-      ]
+      ],
+      onOpen: function (m) {
+        var sel = $('#prefLang', m);
+        buildLangSelect(sel);
+        if (sel) sel.addEventListener('change', function () { setLang(sel.value, false); });
+      }
     });
   }
 
@@ -1347,6 +1534,7 @@
       'A knowledge base your experts control, and the assistant that answers out of it. ' +
       'Preview derived from the vault (1,300+ notes).<br><br>' +
       '<button class="linkish" type="button" data-act="about">More about this preview</button>';
+    i18n.apply(buddyInfo);
   }
   /* how it works window */
   var STEPS = [
@@ -1371,6 +1559,7 @@
     });
     var s = STEPS[idx];
     hwDetail.innerHTML = '<div class="bi-head">STEP ' + (idx + 1) + ': ' + s.name + '</div>' + s.body;
+    i18n.apply(hwDetail);
     if (focusRow) {
       var row = $('.hw-step[data-step="' + idx + '"]');
       if (row) row.focus();
@@ -1415,7 +1604,9 @@
       title: 'Keyboard Shortcuts',
       body:
         '<ul>' +
-        '<li><b>Enter</b> sends a message.</li>' +
+        '<li><b>Enter</b> sends a message. <b>Shift Enter</b> starts a new line.</li>' +
+        '<li><b>Ctrl or Cmd B, I, U</b> bold, italic, underline while typing.</li>' +
+        '<li>Smileys typed as text, like :) or &lt;3, turn into emoji.</li>' +
         '<li><b>Alt 1</b> opens the Buddy List.</li>' +
         '<li><b>Alt 2</b> opens the Instant Message window.</li>' +
         '<li><b>Alt 3</b> opens How It Works.</li>' +
@@ -1478,6 +1669,7 @@
           '<a href="' + SITE + '" target="_blank" rel="noopener">See the live assistant</a>';
         window.open(SITE, '_blank', 'noopener');
       }
+      i18n.apply(buddyInfo);
     });
   });
 
@@ -1498,38 +1690,179 @@
   $('#infoBtn').addEventListener('click', showInfo);
   $('#setupBtn').addEventListener('click', openPrefs);
 
-  /* ---------------------------------------------------------------- formatting */
+  /* ---------------------------------------------------------------- formatting
+     The composer is a rich text box (contenteditable). Bold, italic, underline,
+     strikethrough, and text color apply live through execCommand; what you see
+     while typing is what lands in the transcript. On send, the composer HTML is
+     sanitized down to a whitelist of inline formatting tags for the transcript,
+     while the plain text (no markup) is what goes to the advisor API. */
+  var FORMAT_CMDS = { bold: 'bold', italic: 'italic', underline: 'underline', strike: 'strikethrough' };
+
   function applyFormat(kind) {
-    var start = input.selectionStart || 0, end = input.selectionEnd || 0;
-    var val = input.value;
-    var sel = val.slice(start, end);
-    var marks = { bold: ['**', '**'], italic: ['_', '_'], underline: ['__', '__'] };
-    var m = marks[kind];
-    if (!m) return;
-    input.value = val.slice(0, start) + m[0] + (sel || 'text') + m[1] + val.slice(end);
-    var caret = start + m[0].length + (sel ? sel.length : 4);
+    var cmd = FORMAT_CMDS[kind];
+    if (!cmd) return;
     input.focus();
-    input.setSelectionRange(caret, caret);
-    toast(kind.charAt(0).toUpperCase() + kind.slice(1) + ' formatting added');
+    document.execCommand('styleWithCSS', false, true);
+    document.execCommand(cmd, false, null);
+    paintFormatStates();
+  }
+  function paintFormatStates() {
+    $$('[data-format]').forEach(function (b) {
+      var on = false;
+      try { on = document.queryCommandState(FORMAT_CMDS[b.getAttribute('data-format')]); } catch (e) {}
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
   }
   $$('[data-format]').forEach(function (b) {
+    b.addEventListener('mousedown', function (e) { e.preventDefault(); }); // keep composer selection
     b.addEventListener('click', function () { applyFormat(b.getAttribute('data-format')); });
   });
+  ['keyup', 'mouseup', 'focus'].forEach(function (ev) {
+    input.addEventListener(ev, paintFormatStates);
+  });
 
-  var SMILEYS = [':)', ':(', ';)', ':D', ':-O', 'O:-)', ':-(', '<3', ':*', '=(', ':-P'];
-  var smileyIndex = 0;
-  function insertSmiley() { insertAtCursor(' ' + SMILEYS[smileyIndex % SMILEYS.length] + ' '); smileyIndex++; }
-  $('#smileyBtn').addEventListener('click', insertSmiley);
+  var TEXT_COLORS = ['#000000', '#cc0000', '#0000cc', '#007700', '#880088', '#008080', '#ff6600', '#808080',
+                     '#ffffff', '#ffb6c1', '#99ccff', '#99ff99', '#dda0dd', '#40e0d0', '#ffd700', '#c0c0c0'];
+  var SMILEYS = [
+    [':)', '\uD83D\uDE42'], [':(', '\uD83D\uDE41'], [';)', '\uD83D\uDE09'], [':D', '\uD83D\uDE04'],
+    [':-O', '\uD83D\uDE2E'], ['O:-)', '\uD83D\uDE07'], [":'(", '\uD83D\uDE22'], [':-P', '\uD83D\uDE1B'],
+    [':-*', '\uD83D\uDE18'], ['B-)', '\uD83D\uDE0E'], ['<3', '\u2764\uFE0F'], ['>:o', '\uD83D\uDE20']
+  ];
 
-  function insertAtCursor(text) {
-    var start = input.selectionStart || input.value.length;
-    var end = input.selectionEnd || input.value.length;
-    var val = input.value;
-    input.value = val.slice(0, start) + text + val.slice(end);
-    var caret = start + text.length;
+  function insertTextAtCaret(text) {
     input.focus();
-    input.setSelectionRange(caret, caret);
+    var ok = false;
+    try { ok = document.execCommand && document.execCommand('insertText', false, text); } catch (e) {}
+    if (!ok) input.appendChild(document.createTextNode(text));
   }
+
+  var colorBtn = $('#colorBtn'), smileyBtn = $('#smileyBtn');
+  var pickerEl = null;
+  function closePickers() {
+    if (pickerEl) { pickerEl.remove(); pickerEl = null; }
+    colorBtn.setAttribute('aria-expanded', 'false');
+    smileyBtn.setAttribute('aria-expanded', 'false');
+  }
+  function openPicker(kind) {
+    var isOpen = pickerEl && pickerEl.getAttribute('data-kind') === kind;
+    closeMenu(); closeStart(); closeSnPick(); closePickers();
+    if (isOpen) return;
+    var btn = (kind === 'color') ? colorBtn : smileyBtn;
+    pickerEl = document.createElement('div');
+    pickerEl.className = 'dropdown open picker';
+    pickerEl.setAttribute('data-kind', kind);
+    pickerEl.setAttribute('role', 'menu');
+    pickerEl.style.position = 'fixed';
+    var r = btn.getBoundingClientRect();
+    pickerEl.style.left = Math.max(4, Math.min(r.left - 4, window.innerWidth - 180)) + 'px';
+    pickerEl.style.top = Math.max(4, r.top - (kind === 'color' ? 124 : 66)) + 'px';
+    if (kind === 'color') {
+      TEXT_COLORS.forEach(function (c) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'swatch';
+        b.style.background = c;
+        b.setAttribute('aria-label', 'Text color ' + c);
+        b.title = c;
+        b.addEventListener('click', function (e) {
+          e.stopPropagation();
+          colorBtn.style.borderBottomColor = c;
+          input.focus();
+          document.execCommand('styleWithCSS', false, true);
+          document.execCommand('foreColor', false, c);
+          closePickers();
+        });
+        pickerEl.appendChild(b);
+      });
+    } else {
+      SMILEYS.forEach(function (s) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'smile';
+        b.textContent = s[1];
+        b.title = s[0];
+        b.setAttribute('aria-label', 'Smiley ' + s[0]);
+        b.addEventListener('click', function (e) {
+          e.stopPropagation();
+          insertTextAtCaret(s[1]);
+          closePickers();
+        });
+        pickerEl.appendChild(b);
+      });
+    }
+    document.body.appendChild(pickerEl);
+    pickerEl.addEventListener('mousedown', function (e) { e.preventDefault(); e.stopPropagation(); });
+    btn.setAttribute('aria-expanded', 'true');
+  }
+  colorBtn.addEventListener('mousedown', function (e) { e.preventDefault(); }); // keep composer selection
+  smileyBtn.addEventListener('mousedown', function (e) { e.preventDefault(); });
+  colorBtn.addEventListener('click', function (e) { e.stopPropagation(); openPicker('color'); });
+  smileyBtn.addEventListener('click', function (e) { e.stopPropagation(); openPicker('smiley'); });
+
+  /* composer key handling: Enter sends, Shift+Enter is a line break,
+     paste is forced to plain text so outside markup never reaches the transcript */
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (e.shiftKey) document.execCommand('insertLineBreak');
+      else sendFromComposer();
+    }
+  });
+  input.addEventListener('paste', function (e) {
+    e.preventDefault();
+    var t = (e.clipboardData || window.clipboardData).getData('text/plain');
+    document.execCommand('insertText', false, t);
+  });
+  input.addEventListener('input', function () {
+    if (!input.textContent.replace(/\u00a0/g, '').trim()) input.innerHTML = '';
+  });
+
+  /* whitelist sanitizer: only inline formatting survives into the transcript */
+  function sanitizeRich(html) {
+    var tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    var KEEP = { b: 1, strong: 1, i: 1, em: 1, u: 1, s: 1, strike: 1, br: 1, span: 1, font: 1 };
+    (function walk(node) {
+      Array.prototype.slice.call(node.childNodes).forEach(function (n) {
+        if (n.nodeType === 3) return; // text
+        if (n.nodeType !== 1) { n.remove(); return; }
+        var tag = n.tagName.toLowerCase();
+        if (tag === 'script' || tag === 'style' || tag === 'iframe' || tag === 'object') {
+          n.remove();
+          return;
+        }
+        if (tag === 'div' || tag === 'p') {
+          node.insertBefore(document.createElement('br'), n);
+          while (n.firstChild) node.insertBefore(n.firstChild, n);
+          n.remove();
+          return;
+        }
+        if (!KEEP[tag]) { // unwrap unknown tags, keep their text
+          while (n.firstChild) node.insertBefore(n.firstChild, n);
+          n.remove();
+          return;
+        }
+        var color = '';
+        if (tag === 'span' && n.style && n.style.color) color = n.style.color;
+        if (tag === 'font') color = n.getAttribute('color') || '';
+        Array.prototype.slice.call(n.attributes).forEach(function (a) { n.removeAttribute(a.name); });
+        if (color) {
+          if (tag === 'font') n.setAttribute('color', color);
+          else n.style.color = color;
+        }
+        walk(n);
+      });
+    })(tmp);
+    return tmp.innerHTML.replace(/^(<br\s*\/?>\s*)+/i, '').replace(/(<br\s*\/?>\s*)+$/i, '');
+  }
+
+  function composerText() {
+    var clone = input.cloneNode(true);
+    $$('script, style', clone).forEach(function (n) { n.remove(); });
+    var t = (typeof clone.innerText === 'string') ? clone.innerText : clone.textContent;
+    return (t || '').replace(/\u00a0/g, ' ').trim();
+  }
+
   function insertLink() {
     showModal({
       title: 'Insert a Link',
@@ -1541,7 +1874,7 @@
             var v = ($('#linkInput', m).value || '').trim();
             if (!v) { return false; }
             if (!/^https?:\/\//i.test(v)) v = 'https://' + v;
-            insertAtCursor(' ' + v + ' ');
+            insertTextAtCaret(v);
           } }
       ],
       onOpen: function (m) { $('#linkInput', m).focus(); }
@@ -1569,7 +1902,7 @@
         { label: 'Send Warning', primary: true, onClick: function () {
             warnLevel = Math.min(100, warnLevel + 20);
             paintWarn();
-            addMessage('You sent a warning to VaultAdvisor. Warning level is now ' + warnLevel + '%.', 'sys');
+            addMessage(escapeHtml(i18n.tpl('warningSent', { n: warnLevel })), 'sys');
             tone(220, 0, 0.3, 0.06);
           } }
       ]
@@ -1585,8 +1918,7 @@
     signon.style.display = 'none';
     doorSound();
     transcript.innerHTML = '';
-    addMessage('Ask me anything about raising a Deaf or hard of hearing child. I answer from the vault, and I cite where answers come from.', 'advisor');
-    addMessage('If you are experiencing a crisis, please click here: <a href="https://988lifeline.org/deaf-hard-of-hearing-hearing-loss/" target="_blank" rel="noopener">988lifeline</a>', 'advisor');
+    paintGreeting(true);
     setWin('buddylist', 'open');
     setWin('howtowin', 'open');
     setWin('imwin', 'open');
@@ -1596,6 +1928,33 @@
   $('#snInput').addEventListener('keydown', function (e) {
     if (e.key === 'Enter') signOn();
   });
+
+  /* The opening lines are chrome, not answers, so they follow the language
+     switcher even mid-conversation. */
+  function greetingBody(which) {
+    if (which === 'crisis') {
+      return i18n.t('If you are experiencing a crisis, please click here:') +
+        ' <a href="https://988lifeline.org/deaf-hard-of-hearing-hearing-loss/" target="_blank" rel="noopener">988lifeline</a>';
+    }
+    return escapeHtml(i18n.t('Ask me anything about raising a Deaf or hard of hearing child. I answer from the vault, and I cite where answers come from.'));
+  }
+  function paintGreeting(add) {
+    var lines = $$('#chatTranscript [data-greeting]');
+    if (!add && !lines.length) return;
+    if (lines.length) {
+      lines.forEach(function (line) {
+        var which = line.getAttribute('data-greeting');
+        var ts = line.getAttribute('data-ts') || timeStamp();
+        line.innerHTML = '<span class="who who-adv">VaultAdvisor ' + escapeHtml(ts) + ':</span> ' + greetingBody(which);
+      });
+      return;
+    }
+    ['ask', 'crisis'].forEach(function (which) {
+      var line = addMessage(greetingBody(which), 'advisor');
+      line.setAttribute('data-greeting', which);
+      line.setAttribute('data-ts', timeStamp());
+    });
+  }
 
   function logOff() {
     closeModal();
@@ -1667,14 +2026,29 @@
     '</ul>' +
     '<span class="cite">Preview note: answers here are hand written from the vault themes. The live assistant writes them from the notes themselves.</span>';
 
-  function route(q) {
+  window.PA_CANNED_EN = {
+    crisisAnswer: crisisAnswer,
+    deprivationAnswer: deprivationAnswer,
+    aslCiAnswer: aslCiAnswer,
+    crpdAnswer: crpdAnswer,
+    fallbackAnswer: fallbackAnswer
+  };
+
+  /* The preview answers ship as whole translated blocks, so the route names a
+     block and i18n supplies it in the visitor's language. */
+  function routeKey(q) {
     for (var i = 0; i < CRISIS_PATTERNS.length; i++) {
-      if (CRISIS_PATTERNS[i].test(q)) return crisisAnswer;
+      if (CRISIS_PATTERNS[i].test(q)) return 'crisisAnswer';
     }
-    if (/depriv/i.test(q) || /delay(ed)? (in )?(speech|language)/i.test(q) || /not (talk|speak)ing/i.test(q)) return deprivationAnswer;
-    if (/\b(asl|sign(ing| language)?)\b/i.test(q) || /\bci\b/i.test(q) || /implant/i.test(q) || /cochlear/i.test(q)) return aslCiAnswer;
-    if (/crpd/i.test(q) || /right(s)?\b/i.test(q) || /school/i.test(q) || /\biep\b/i.test(q) || /\b504\b/.test(q) || /\blead-?k\b/i.test(q)) return crpdAnswer;
-    return fallbackAnswer;
+    if (/depriv/i.test(q) || /delay(ed)? (in )?(speech|language)/i.test(q) || /not (talk|speak)ing/i.test(q)) return 'deprivationAnswer';
+    if (/\b(asl|sign(ing| language)?)\b/i.test(q) || /\bci\b/i.test(q) || /implant/i.test(q) || /cochlear/i.test(q)) return 'aslCiAnswer';
+    if (/crpd/i.test(q) || /right(s)?\b/i.test(q) || /school/i.test(q) || /\biep\b/i.test(q) || /\b504\b/.test(q) || /\blead-?k\b/i.test(q)) return 'crpdAnswer';
+    return 'fallbackAnswer';
+  }
+
+  function routeBlock(q) {
+    var k = routeKey(q);
+    return '<span data-canned="' + k + '">' + i18n.canned(k) + '</span>';
   }
 
   function timeStamp() {
@@ -1706,7 +2080,8 @@
   // Drop dangling markdown markers while a slice is mid-word (e.g. a lone "**")
   // so the animated reveal never flashes stray asterisks.
   function partialClean(s) {
-    return s.replace(/[*_`#]{1,3}$/, '').replace(/\[[^\]]*$/, '');
+    return s.replace(/[*_`#]{1,3}$/, '').replace(/\[[^\]]*$/, '')
+      .replace(/<\/?[a-zA-Z][^>]*$/, '');   // a half-typed tag never flashes
   }
 
   function typeOut(line, raw, tailHtml, onDone) {
@@ -1781,18 +2156,158 @@
     return div.innerHTML;
   }
 
+  /* classic AIM smileys: ASCII emoticons become real glyphs everywhere text is shown */
+  var EMOTICONS = [
+    [/(^|[\s(])O:-?\)(?=$|[\s).,;:!?])/gi, '$1\uD83D\uDE07'],
+    [/(^|[\s(]):'-?\((?=$|[\s).,;:!?])/g, '$1\uD83D\uDE22'],
+    [/(^|[\s(])&lt;3(?=$|[\s).,;:!?])/g, '$1\u2764\uFE0F'],
+    [/(^|[\s(])B-\)(?=$|[\s).,;:!?])/gi, '$1\uD83D\uDE0E'],
+    [/(^|[\s(]):-?\*(?=$|[\s).,;:!?])/g, '$1\uD83D\uDE18'],
+    [/(^|[\s(]):-?[pP](?=$|[\s).,;:!?])/g, '$1\uD83D\uDE1B'],
+    [/(^|[\s(]):-?[oO](?=$|[\s).,;:!?])/g, '$1\uD83D\uDE2E'],
+    [/(^|[\s(]);-?\)(?=$|[\s).,;:!?])/g, '$1\uD83D\uDE09'],
+    [/(^|[\s(]):-?D(?=$|[\s).,;:!?])/g, '$1\uD83D\uDE04'],
+    [/(^|[\s(]):-?\((?=$|[\s).,;:!?])/g, '$1\uD83D\uDE41'],
+    [/(^|[\s(]):-?\)(?=$|[\s).,;:!?])/g, '$1\uD83D\uDE42']
+  ];
+  function emotify(html) {
+    for (var i = 0; i < EMOTICONS.length; i++) html = html.replace(EMOTICONS[i][0], EMOTICONS[i][1]);
+    return html;
+  }
+
+  /* Markdown, done for a 560px AIM transcript.
+     Models answer with tables and <https://…> autolinks; raw pipes and angle
+     brackets read as broken code in a chat window. So: tables become stacked
+     resource blocks (name is a link, contact line underneath), angle brackets
+     are stripped, and every bare URL or email becomes a real link. */
+  var _mdTokens = [];
+
+  function mdEsc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function mdLink(url, label) {
+    return '<a href="' + mdEsc(url) + '" target="_blank" rel="noopener noreferrer">' + label + '</a>';
+  }
+  function mdTok(html) { _mdTokens.push(html); return '\u0000' + (_mdTokens.length - 1) + '\u0000'; }
+
+  // Inline pass: escape, linkify, then the AIM-ish inline set.
+  function inlineMd(raw) {
+    var s = String(raw == null ? '' : raw)
+      .replace(/<\s*((?:https?:\/\/|mailto:)[^>\s]+)\s*>/g, '$1')   // <https://x> -> https://x
+      .replace(/<\s*([^\s<>@]+@[^\s<>]+)\s*>/g, '$1')                // <a@b.org> -> a@b.org
+      .replace(/<\s*>/g, '');                                        // stray empty <>
+    _mdTokens = [];
+    s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, function (m, txt, url) {
+      return mdTok(mdLink(url, mdEsc(txt)));
+    });
+    s = mdEsc(s);
+
+    // bare URLs, trailing punctuation kept outside the link
+    s = s.replace(/(^|[\s(*])(https?:\/\/[^\s]+)/g, function (m, pre, url) {
+      var tail = (url.match(/[.,;:!?)\]]+$/) || [''])[0];
+      if (tail) url = url.slice(0, -tail.length);
+      if (!url || url.length < 12) return m;
+      return pre + mdTok(mdLink(url, url)) + tail;
+    });
+    // bare emails
+    s = s.replace(/(^|[\s(*])([\w.+-]+@[\w-]+(?:\.[\w-]+)+)/g, function (m, pre, mail) {
+      var tail = (mail.match(/[.,;:!?]+$/) || [''])[0];
+      if (tail) mail = mail.slice(0, -tail.length);
+      return pre + mdTok('<a href="mailto:' + mail + '">' + mail + '</a>') + tail;
+    });
+
+    s = s.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+    s = s.replace(/__(.+?)__/g, '<u>$1</u>');
+    s = s.replace(/(^|[\s(])_([^_\n]{1,200})_([\s).,;:!?]|$)/g, '$1<i>$2</i>$3');
+    s = s.replace(/^#{1,6} (.+)$/gm, '<b>$1</b>');
+    s = emotify(s);
+    s = s.replace(/[ \t]*\u0001[ \t]*/g, '<br>');
+    return s.replace(/\u0000(\d+)\u0000/g, function (m, n) { return _mdTokens[+n] || ''; });
+  }
+
+  /* Models sometimes hand back HTML fragments (<br>, <li>, <b>…). A chat
+     transcript must never show a tag, so: line breaks become real lines, list
+     items become bullets, anchors keep their URL, emphasis becomes markdown,
+     and anything else tag-shaped is dropped before escaping. */
+  function normalizeMd(text) {
+    var s = String(text == null ? '' : text);
+    s = s.replace(/&nbsp;/gi, ' ')
+      .replace(/&lt;/gi, '<').replace(/&gt;/gi, '>')
+      .replace(/&quot;/gi, '"').replace(/&#0?39;/gi, "'")
+      .replace(/&amp;/gi, '&');
+    // <br> is an inline break, not a row break: a control-char marker keeps a
+    // table row in one piece, and inlineMd turns it into a real <br> later.
+    s = s.replace(/<br\s*\/?>/gi, '\u0001');
+    s = s.replace(/<a\b[^>]*href\s*=\s*["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, '[$2]($1)');
+    s = s.replace(/<\/?(p|div|section|article|header|footer|ul|ol|table|thead|tbody|tr|blockquote)\b[^>]*>/gi, '\n');
+    s = s.replace(/<li\b[^>]*>/gi, '\n- ').replace(/<\/li>/gi, '');
+    s = s.replace(/<\/?(strong|b)\b[^>]*>/gi, '**');
+    s = s.replace(/<\/?(em|i)\b[^>]*>/gi, '_');
+    s = s.replace(/<\/?u\b[^>]*>/gi, '__');
+    s = s.replace(/<\/?(span|font|small|sub|sup|s|strike|del|ins|mark|center)\b[^>]*>/gi, '');
+    s = s.replace(/<\/?[a-z][a-z0-9-]*(?:\s[^>]*)?\/?>/gi, '');   // any remaining tag
+    return s;
+  }
+
+  var TBL_ROW = /^\s*\|.*\|\s*$/;
+  var TBL_SEP = /^\s*\|?\s*:?-{2,}:?\s*(?:\|\s*:?-{2,}:?\s*)+\|?\s*$/;
+
+  function tblCells(line) {
+    var s = String(line).trim().replace(/^\|/, '').replace(/\|$/, '');
+    return s.split('|').map(function (c) { return c.trim(); });
+  }
+  function firstUrl(s) {
+    var m = String(s || '').match(/<?(https?:\/\/[^\s<>"')]+)>?/);
+    return m ? m[1].replace(/[.,;:!?]+$/, '') : '';
+  }
+
+  // One table row -> one readable entry. The name keeps its red bold look but
+  // carries the resource's own link; contact details drop to a small line.
+  function resourceBlock(cells) {
+    var name = (cells[0] || '').replace(/\*+/g, '').trim();
+    var desc = (cells[1] || '').replace(/\*+/g, '').trim();
+    var how = cells.slice(2).join(' \u00b7 ').trim();
+    if (!name || !desc || /^\(?\s*see above\s*\)?\.?$/i.test(desc)) return '';
+    var url = firstUrl(cells.join(' | '));
+    var nameHtml = inlineMd(name);
+    if (!/href=/.test(nameHtml)) {
+      nameHtml = url ? mdLink(url, nameHtml)
+        : '<b class="res-name">' + nameHtml + '</b>';
+    }
+    var html = '<div class="res">' + nameHtml;
+    if (desc) html += '<span class="res-desc">' + inlineMd(desc) + '</span>';
+    if (how) html += '<span class="res-how">' + inlineMd(how) + '</span>';
+    return html + '</div>';
+  }
+
   function renderMarkdownLite(text) {
-    var escaped = String(text)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    escaped = escaped.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
-      '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
-    escaped = escaped.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
-    escaped = escaped.replace(/__(.+?)__/g, '<u>$1</u>');
-    escaped = escaped.replace(/(^|[\s(])_([^_\n]{1,200})_([\s).,;:!?]|$)/g, '$1<i>$2</i>$3');
-    escaped = escaped.replace(/^#{1,6} (.+)$/gm, '<b>$1</b>');
-    escaped = escaped.replace(/^[-*] (.+)$/gm, '&bull; $1');
-    escaped = escaped.replace(/\n/g, '<br>');
-    return escaped;
+    var lines = normalizeMd(text).split('\n');
+    var out = [];
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i];
+      if (TBL_ROW.test(line) && i + 1 < lines.length && TBL_SEP.test(lines[i + 1])) {
+        var rows = [], j = i + 2, blocks = '';
+        while (j < lines.length && TBL_ROW.test(lines[j])) { rows.push(tblCells(lines[j])); j++; }
+        rows.forEach(function (cells) {
+          if (/^resource$/i.test((cells[0] || '').replace(/\*+/g, '').trim())) return; // header
+          blocks += resourceBlock(cells);
+        });
+        if (blocks) { out.push('<div class="res-list">' + blocks + '</div>'); i = j - 1; continue; }
+      }
+      if (/^\s*$/.test(line)) { out.push(''); continue; }
+      if (TBL_SEP.test(line)) continue;
+      if (TBL_ROW.test(line) || /^\s*\|/.test(line)) {
+        // mid-stream row: the separator row has not arrived yet, so never show pipes
+        var mid = tblCells(line).filter(function (c) { return c; });
+        if (mid.length) out.push(inlineMd(mid.join(' \u00b7 ')));
+        continue;
+      }
+      if (/^\s*[-*] /.test(line)) { out.push('&bull; ' + inlineMd(line.replace(/^\s*[-*] /, ''))); continue; }
+      out.push(inlineMd(line));
+    }
+    return out.join('<br>');
   }
 
   function showTyping() {
@@ -1800,7 +2315,7 @@
     line.className = 'mline';
     line.id = 'typing';
     line.setAttribute('data-who', 'sys');
-    line.innerHTML = '<span class="sys">VaultAdvisor is searching the vault...</span>';
+    line.innerHTML = '<span class="sys">' + escapeHtml(i18n.t('VaultAdvisor is searching the vault...')) + '</span>';
     transcript.appendChild(line);
     transcript.scrollTop = transcript.scrollHeight;
   }
@@ -1814,20 +2329,29 @@
       var full = c.citation ? ' title="' + escapeHtml(String(c.citation).slice(0, 400)) + '"' : '';
       if (link) {
         rows += '<li' + full + '>' + escapeHtml(title) + ' <a class="doi-link" href="' + escapeHtml(link) +
-          '" target="_blank" rel="noopener noreferrer">read the paper</a></li>';
+          '" target="_blank" rel="noopener noreferrer">' + i18n.t('read the paper') + '</a></li>';
       } else {
         rows += '<li' + full + '>' + escapeHtml(title) + '</li>';
       }
     });
-    var head = (citations.length === 1) ? 'Cited from the vault:' : 'Cited from the vault (' + citations.length + ' sources):';
+    var head = (citations.length === 1) ? i18n.tpl('citedFromOne') : i18n.tpl('citedFromMany', { n: citations.length });
     return '<div class="cites"><span class="cite-head">' + head + '</span><ul>' + rows + '</ul></div>';
   }
 
-  function ask(q) {
+  /* The advisor retrieves in English, so the language request rides along as a
+     short English tail: the question keeps its retrieval tokens and the model
+     is told which language to answer in. */
+  function apiQuestion(q) {
+    var body = String(q).trim().slice(0, 460);
+    if (i18n.lang() === 'en') return body;
+    return body + '\n\n(Answer in ' + i18n.meta().en + '.)';
+  }
+
+  function ask(q, richHtml) {
     q = (q || '').trim();
     if (!q) { toast('Type a question first'); input.focus(); return; }
-    addMessage(renderMarkdownLite(q), 'parent');
-    input.value = '';
+    addMessage(richHtml || renderMarkdownLite(q), 'parent');
+    input.innerHTML = '';
     var typingEl = document.getElementById('typing');
     if (typingEl) typingEl.remove();
     showTyping();
@@ -1844,7 +2368,7 @@
     }
 
     var timer = setTimeout(function () {
-      finish('The live advisor is taking too long, so this is the preview answer.<br><br>' + route(q));
+      finish(i18n.t('The live advisor is taking too long, so this is the preview answer.') + '<br><br>' + routeBlock(q));
     }, 25000);
 
     // Typewriter reveal of a real answer: builds the message shell, then streams
@@ -1865,7 +2389,11 @@
     fetch(API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: q.slice(0, 500) })
+      body: JSON.stringify({
+        question: apiQuestion(q),
+        sessionId: SESSION_ID,
+        language: i18n.lang()
+      })
     }).then(function (r) {
       return r.json().then(function (data) { return { ok: r.ok, data: data }; });
     }).then(function (out) {
@@ -1875,26 +2403,31 @@
         if (out.data.citations && out.data.citations.length) {
           tail += renderCitations(out.data.citations);
         } else if (out.data.sources && out.data.sources.length) {
-          tail += '<span class="cite">Answered from ' + out.data.sources.length + ' vault passages.</span>';
+          tail += '<span class="cite">' + escapeHtml(i18n.tpl('answeredFrom', { n: out.data.sources.length })) + '</span>';
         }
         reveal(out.data.answer, tail);
       } else {
-        var err = (out.data && out.data.error) ? escapeHtml(out.data.error) : 'The advisor could not be reached.';
-        finish(err + '<br><br>' + route(q));
+        var err = (out.data && out.data.error) ? escapeHtml(i18n.t(out.data.error)) : escapeHtml(i18n.t('The advisor could not be reached.'));
+        finish(err + '<br><br>' + routeBlock(q));
       }
     }).catch(function () {
       clearTimeout(timer);
-      finish('The live advisor could not be reached, so this is the preview answer.<br><br>' + route(q));
+      finish(i18n.t('The live advisor could not be reached, so this is the preview answer.') + '<br><br>' + routeBlock(q));
     });
   }
 
-  sendBtn.addEventListener('click', function () { ask(input.value); });
-  input.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') { e.preventDefault(); ask(input.value); }
-  });
+  function sendFromComposer() {
+    var q = composerText();
+    if (!q) { toast('Type a question first'); input.focus(); return; }
+    var html = emotify(sanitizeRich(input.innerHTML));
+    if (!html.replace(/<br\s*\/?>/gi, '').trim()) html = '';
+    ask(q, html || null);
+  }
+  sendBtn.addEventListener('click', sendFromComposer);
   $$('.chip').forEach(function (chip) {
+    chip.__enQ = chip.textContent.trim();   // the vault is indexed in English
     chip.addEventListener('click', function () {
-      ask(chip.textContent);
+      ask(chip.__enQ || chip.textContent);
       openIM();
     });
   });
@@ -1939,7 +2472,7 @@
         { label: 'Cancel' },
         { label: 'Clear', primary: true, onClick: function () {
             transcript.innerHTML = '';
-            addMessage('Conversation cleared.', 'sys');
+            addMessage(escapeHtml(i18n.t('Conversation cleared.')), 'sys');
             input.focus();
           } }
       ]
@@ -1963,6 +2496,12 @@
   });
 
   /* ---------------------------------------------------------------- boot */
+  langSelects.forEach(function (sel) {
+    if (!sel) return;
+    buildLangSelect(sel);
+    sel.addEventListener('change', function () { setLang(sel.value, true); });
+  });
+  setLang(detectLang(), false);
   paintPrefs();
   paintWarn();
   refreshChecks();
