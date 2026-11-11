@@ -247,7 +247,7 @@
   .who { font-weight: bold; }
   .who-adv { color: var(--aim-red); }
   .who-you { color: var(--aim-blue); }
-  .sys { color: #808080; font-style: italic; }
+  .sys { color: #6b6b6b; font-style: italic; }
   .mline ul { padding-left: 18px; margin: 3px 0; }
   .mline strong, .mline b { color: #8b0000; }
   /* answer links: blue and clickable, per the transcript's own convention */
@@ -434,6 +434,10 @@
   }
 
   @media (max-width: 820px) {
+    /* The taskbar is position:fixed and no window reserved space for it, so on
+       phones it covered the bottom of the IM window, including the last
+       example-question chip. */
+    body { padding-bottom: 44px; }
     .window { position: static !important; width: auto !important; margin: 8px; }
     .window.is-max { box-shadow: 1px 1px 0 #000; }
     .rz { display: none; }
@@ -681,7 +685,7 @@
 <div id="toast" role="status" aria-live="polite"></div>
 
 <div id="credit">
-  A knowledge base your AI Agents control, where quality data provides better results<br>
+  A knowledge base your experts control, and the assistant that answers out of it<br>
   Built by Clayton Lawson &middot; <a href="https://learnwithclay.ai" target="_blank" rel="noopener">learnwithclay.ai</a>
 </div>
 
@@ -881,10 +885,36 @@
 
   /* ---------------------------------------------------------------- modal */
   var modal = $('#modal');
+  /* The sign-on screen and #modal both claim aria-modal. Without inert on the
+     app behind them, a keyboard or screen-reader user could operate the hidden
+     app (and, on the sign-on screen, do it before signing on). */
+  var SHELL_SELECTORS = ['#buddylist', '#howtowin', '#imwin', '#taskbar'];
+  var signOnOpen = true, modalOpen = false;
+  function refreshInert() {
+    var on = signOnOpen || modalOpen;
+    SHELL_SELECTORS.forEach(function (sel) {
+      var el = $(sel);
+      if (el) el.inert = on;
+    });
+  }
+  /* Keep Tab inside an open dialog. Both dialogs are flat enough that a simple
+     first/last wrap is enough. */
+  function trapTab(container, e) {
+    if (e.key !== 'Tab') return;
+    var items = $$('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href]', container)
+      .filter(function (el) { return el.getClientRects().length > 0; });
+    if (!items.length) return;
+    var first = items[0], last = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+
   function closeModal() {
     if (!modal.classList.contains('open')) return;
     modal.classList.remove('open');
     modal.innerHTML = '';
+    modalOpen = false;
+    refreshInert();
     if (lastFocus && lastFocus.focus) { try { lastFocus.focus(); } catch (e) {} }
     lastFocus = null;
   }
@@ -914,11 +944,18 @@
       foot.appendChild(btn);
     });
     modal.classList.add('open');
+    modalOpen = true;
+    refreshInert();
     if (opts.onOpen) opts.onOpen(modal);
     i18n.apply(modal);
     var first = $('.body button, .body input, .foot .btn3d', modal);
     if (first) first.focus();
   }
+  modal.addEventListener('keydown', function (e) {
+    if (!modal.classList.contains('open')) return;
+    if (e.key === 'Escape') { e.preventDefault(); closeModal(); return; }
+    trapTab(modal, e);
+  });
   modal.addEventListener('click', function (e) {
     if (e.target === modal) closeModal();
     if (e.target.hasAttribute && e.target.hasAttribute('data-modal-close')) closeModal();
@@ -1822,37 +1859,45 @@
     var tmp = document.createElement('div');
     tmp.innerHTML = html;
     var KEEP = { b: 1, strong: 1, i: 1, em: 1, u: 1, s: 1, strike: 1, br: 1, span: 1, font: 1 };
-    (function walk(node) {
-      Array.prototype.slice.call(node.childNodes).forEach(function (n) {
-        if (n.nodeType === 3) return; // text
-        if (n.nodeType !== 1) { n.remove(); return; }
-        var tag = n.tagName.toLowerCase();
-        if (tag === 'script' || tag === 'style' || tag === 'iframe' || tag === 'object') {
-          n.remove();
-          return;
-        }
-        if (tag === 'div' || tag === 'p') {
-          node.insertBefore(document.createElement('br'), n);
-          while (n.firstChild) node.insertBefore(n.firstChild, n);
-          n.remove();
-          return;
-        }
-        if (!KEEP[tag]) { // unwrap unknown tags, keep their text
-          while (n.firstChild) node.insertBefore(n.firstChild, n);
-          n.remove();
-          return;
-        }
-        var color = '';
-        if (tag === 'span' && n.style && n.style.color) color = n.style.color;
-        if (tag === 'font') color = n.getAttribute('color') || '';
-        Array.prototype.slice.call(n.attributes).forEach(function (a) { n.removeAttribute(a.name); });
-        if (color) {
-          if (tag === 'font') n.setAttribute('color', color);
-          else n.style.color = color;
-        }
-        walk(n);
-      });
-    })(tmp);
+    /* visit() inspects ONE element. The old walker only looked at the children
+       of the node it was given, so an element moved up during unwrapping was
+       never itself examined: a nested <img onerror> survived into the
+       transcript. Every moved child now goes back through visit(). */
+    function visit(n) {
+      if (!n || n.nodeType !== 1) return;
+      var tag = n.tagName.toLowerCase();
+      if (tag === 'script' || tag === 'style' || tag === 'iframe' || tag === 'object') {
+        n.remove();
+        return;
+      }
+      var parent = n.parentNode;
+      if (!parent) return;
+      if (tag === 'div' || tag === 'p') {
+        parent.insertBefore(document.createElement('br'), n);
+        var movedBlock = Array.prototype.slice.call(n.childNodes);
+        movedBlock.forEach(function (c) { parent.insertBefore(c, n); });
+        n.remove();
+        movedBlock.forEach(function (c) { if (c.nodeType === 1) visit(c); });
+        return;
+      }
+      if (!KEEP[tag]) { // unwrap unknown tags, keep their text
+        var movedInline = Array.prototype.slice.call(n.childNodes);
+        movedInline.forEach(function (c) { parent.insertBefore(c, n); });
+        n.remove();
+        movedInline.forEach(function (c) { if (c.nodeType === 1) visit(c); });
+        return;
+      }
+      var color = '';
+      if (tag === 'span' && n.style && n.style.color) color = n.style.color;
+      if (tag === 'font') color = n.getAttribute('color') || '';
+      Array.prototype.slice.call(n.attributes).forEach(function (a) { n.removeAttribute(a.name); });
+      if (color) {
+        if (tag === 'font') n.setAttribute('color', color);
+        else n.style.color = color;
+      }
+      Array.prototype.slice.call(n.childNodes).forEach(function (c) { if (c.nodeType === 1) visit(c); });
+    }
+    Array.prototype.slice.call(tmp.childNodes).forEach(function (c) { if (c.nodeType === 1) visit(c); });
     return tmp.innerHTML.replace(/^(<br\s*\/?>\s*)+/i, '').replace(/(<br\s*\/?>\s*)+$/i, '');
   }
 
@@ -1916,6 +1961,8 @@
     setScreenName($('#snInput').value);
     welcome();
     signon.style.display = 'none';
+    signOnOpen = false;
+    refreshInert();
     doorSound();
     transcript.innerHTML = '';
     paintGreeting(true);
@@ -1927,6 +1974,12 @@
   signOnBtn.addEventListener('click', signOn);
   $('#snInput').addEventListener('keydown', function (e) {
     if (e.key === 'Enter') signOn();
+  });
+  // The sign-on screen covers the viewport and declares aria-modal, so Tab has
+  // to stay inside it. Previously Tab 5 walked into a window behind the overlay.
+  signon.addEventListener('keydown', function (e) {
+    if (signon.style.display === 'none') return;
+    trapTab(signon, e);
   });
 
   /* The opening lines are chrome, not answers, so they follow the language
@@ -1959,6 +2012,8 @@
   function logOff() {
     closeModal();
     signon.style.display = 'flex';
+    signOnOpen = true;
+    refreshInert();
     ['buddylist', 'howtowin', 'imwin'].forEach(function (id) { setWin(id, 'closed'); });
     transcript.innerHTML = '';
     $('#snInput').value = prefs.sn || 'VisitingParent';
@@ -2187,8 +2242,19 @@
       .replace(/&/g, '&amp;').replace(/</g, '&lt;')
       .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
+  /* Only http(s), mailto and tel survive as link targets. A citation url comes
+     from the API response, so a javascript: or data: value there would run as
+     soon as a reader clicked it. Anything else renders as plain text. */
+  function safeHref(url) {
+    var u = String(url == null ? '' : url).trim();
+    if (/^(https?:|mailto:|tel:)/i.test(u)) return u;
+    if (/^\/[^\/]/.test(u)) return u; // site-relative
+    return '';
+  }
   function mdLink(url, label) {
-    return '<a href="' + mdEsc(url) + '" target="_blank" rel="noopener noreferrer">' + label + '</a>';
+    var href = safeHref(url);
+    if (!href) return label;
+    return '<a href="' + mdEsc(href) + '" target="_blank" rel="noopener noreferrer">' + label + '</a>';
   }
   function mdTok(html) { _mdTokens.push(html); return '\u0000' + (_mdTokens.length - 1) + '\u0000'; }
 
@@ -2325,7 +2391,7 @@
     var rows = '';
     citations.slice(0, 8).forEach(function (c) {
       var title = String(c.title || c.source || 'vault note');
-      var link = c.url || (c.doi ? ('https://doi.org/' + c.doi) : '');
+      var link = safeHref(c.url || (c.doi ? ('https://doi.org/' + c.doi) : ''));
       var full = c.citation ? ' title="' + escapeHtml(String(c.citation).slice(0, 400)) + '"' : '';
       if (link) {
         rows += '<li' + full + '>' + escapeHtml(title) + ' <a class="doi-link" href="' + escapeHtml(link) +
@@ -2507,6 +2573,9 @@
   refreshChecks();
   setScreenName(prefs.sn || 'VisitingParent');
   selectStep(0, false);
+  // Make the app inert while the sign-on dialog is up, and put focus inside it.
+  refreshInert();
+  $('#snInput').focus();
   if (window.innerWidth > 820) {
     var hw = $('#howtowin');
     var need = 850 + hw.offsetWidth + 8;

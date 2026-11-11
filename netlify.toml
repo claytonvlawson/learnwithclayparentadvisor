@@ -8,6 +8,12 @@
     X-Frame-Options = "SAMEORIGIN"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    # The app is one inline script plus a few inline handlers, so script-src has
+    # to allow inline. Everything else is locked to self: object/embed, frames,
+    # and form posts cannot leave the page. Once the inline script moves to its
+    # own file this can tighten to script-src 'self'.
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://learnwithclay.ai; frame-ancestors 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
 
 # the translation table is large and changes only when a language does, so let
 # repeat visitors reuse it (revalidate inside the hour, so a deploy is not stale)
