@@ -1,2 +1,6 @@
 .DS_Store
 .netlify
+.venv/
+__pycache__/
+.pytest_cache/
+test-results/
