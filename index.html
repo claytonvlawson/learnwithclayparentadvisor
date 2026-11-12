@@ -1850,6 +1850,17 @@
     var t = (e.clipboardData || window.clipboardData).getData('text/plain');
     document.execCommand('insertText', false, t);
   });
+  /* Paste is forced to plain text above, but drop was not: dragging HTML into a
+     contenteditable inserts real markup, and the composer itself is a live sink
+     (an <img onerror> fires the moment it lands, before any send-time
+     sanitizing). Same treatment as paste: text only. */
+  input.addEventListener('drop', function (e) {
+    var dt = e.dataTransfer;
+    if (!dt) return;
+    e.preventDefault();
+    var t = dt.getData('text/plain');
+    if (t) document.execCommand('insertText', false, t);
+  });
   input.addEventListener('input', function () {
     if (!input.textContent.replace(/\u00a0/g, '').trim()) input.innerHTML = '';
   });
