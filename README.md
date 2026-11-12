@@ -27,3 +27,5 @@ intact, and accessibility in how we work.
 Netlify project `learnwithclayparentadvisor`. Publish directory is the repo root;
 there is no build command. Any push to `main` can deploy once the Netlify site is
 linked to this repository.
+
+<!-- build trigger check -->
