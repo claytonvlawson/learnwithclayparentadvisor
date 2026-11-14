@@ -171,3 +171,19 @@ for `i18n.js` and `assets/`. Any push to `main` deploys once the site is linked.
 
 The code is MIT. The knowledge base it answers from is not in this repository and
 is not covered by that license.
+
+## GitHub Pages demo
+
+A read-only mirror of this page is published from `main` at
+
+    https://claytonvlawson.github.io/learnwithclayparentadvisor/
+
+GitHub Pages serves the repo root as-is (`.nojekyll` keeps every file, including
+`assets/`), so the same `index.html` / `assets/app.js` / `i18n.js` that ship to
+Netlify run there. The page calls the live advisor at
+`https://learnwithclay.ai/api/parent/chat`; that endpoint allows the Pages origin
+`https://claytonvlawson.github.io` in `api/parent/chat.js` of
+`learnwithclay-site`. Without that entry the page still renders and answers with
+the canned preview routing, but no live answers arrive.
+
+Demo limits come from the API, not the page: 10 questions per IP per UTC day.
