@@ -186,4 +186,7 @@ Netlify run there. The page calls the live advisor at
 `learnwithclay-site`. Without that entry the page still renders and answers with
 the canned preview routing, but no live answers arrive.
 
-Demo limits come from the API, not the page: 10 questions per IP per UTC day.
+Demo limits come from the API, not the page: there is no daily question cap,
+just a 30-per-minute per-IP burst guard in `api/parent/chat.js` of
+`learnwithclay-site`. Set `PARENT_DAILY_LIMIT` in the Vercel project to put a
+daily cap back.
