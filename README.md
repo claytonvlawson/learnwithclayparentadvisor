@@ -15,7 +15,7 @@ they first talked to strangers about hard things.
 
 ![The advisor window after one question](docs/im-window.png)
 
-- Live: https://learnwithclayparentadvisor.netlify.app
+- Live: https://claytonvlawson.github.io/learnwithclayparentadvisor/
 - Backend it calls: https://learnwithclay.ai/api/parent/chat
 - No build step, no framework, no dependencies in the shipped page
 
@@ -28,7 +28,9 @@ they first talked to strangers about hard things.
   typewriter reveal, and the citation list links the notes behind the answer.
 - **18 languages**, including right-to-left Arabic and Urdu. The picker
   retranslates the whole document in place: every translatable string is keyed by
-  its English source text, so switching back to English is lossless.
+  its English source text, so switching back to English is lossless. Each table
+  is its own file, fetched when it is picked, so an English visit downloads none
+  of them.
 - **A crisis path that cannot be lost in the ranking.** If the parent's own words
   match the safety patterns, the 988 line and the guardrails note lead the answer.
 - **Keyboard and screen-reader behaviour**: the shell is made inert while a modal
@@ -37,14 +39,16 @@ they first talked to strangers about hard things.
 
 ## How the code is laid out
 
-There is no build step: the browser loads four files in order.
+There is no build step: the browser loads four files in order, and a fifth only
+when a visitor picks a language other than English.
 
 | File | What lives there |
 |---|---|
 | `index.html` | markup only: the sign-on dialog, buddy list, IM window, taskbar, modal shell |
 | `assets/styles.css` | the whole stylesheet, including the 18-language font stacks and RTL rules |
 | `assets/app.js` | all behaviour: prefs, language wiring, windows, menus, composer, chat, citations, sanitizer |
-| `i18n.js` | the translation runtime and the string table, keyed by English text |
+| `i18n.js` | the translation runtime: language list, English templates, and the loader |
+| `i18n/<code>.js` | one translation table per language, keyed by English text, fetched when that language is selected |
 
 `assets/app.js` opens with a structural map of its own regions, in order: config
 and prefs, language, chrome, accessibility, menus, windows, sign-on, help,
@@ -112,7 +116,7 @@ Or run the Python host, which sends the same security headers as the deploy:
 
 ## Tests
 
-25 browser tests, no network and no live backend: the advisor endpoint is stubbed
+31 browser tests, no network and no live backend: the advisor endpoint is stubbed
 with Playwright routing. They run under the deploy's Content-Security-Policy,
 because a CSP violation is exactly the kind of breakage a headless run should
 catch.
@@ -127,9 +131,15 @@ catch.
 | `tests/test_chat.py` | the question that goes on the wire (with `language` and `sessionId`), the answer and citations reaching the transcript, the fallback when the API fails, and that pasted or dropped HTML cannot inject markup |
 | `tests/test_i18n.py` | switching language retranslates the document, the choice survives sign-on, switching back to English is lossless, Arabic sets `dir="rtl"` |
 | `tests/test_review_fixes.py` | the three defects found in the November 2026 review: citation text staying inside its attribute, a second Enter not starting a second request, and the offline crisis route firing in Spanish and Chinese |
+| `tests/test_i18n_payload.py` | one translation file per language: English fetches none, selecting a language fetches that one, a loaded language is not fetched twice, and every advertised language has a file |
 
 `docs/REVIEW.md` is that review: what holds up, what was fixed, and what is
 still open, each item with the command that shows it.
+
+Each language table is its own file, 15 to 30 KB, and is fetched the first time
+that language is picked. English is the source text and has no file, so an
+English visit downloads the runtime only. `tools/split_i18n.py` is the one-shot
+migration that moved the tables out of `i18n.js`.
 
 `tools/shots.py` regenerates the two screenshots above from the real page.
 `tools/split_site.py` is the one-shot migration that moved the CSS and JS out of
@@ -166,29 +176,27 @@ intact, and accessibility in how we work.
 
 ## Deploy
 
-Netlify project `learnwithclayparentadvisor`. Publish directory is the repo root;
-there is no build command. `netlify.toml` carries the security headers
-(`script-src 'self'` now that the JavaScript is not inline) and an hour-long cache
-for `i18n.js` and `assets/`. Any push to `main` deploys once the site is linked.
+GitHub Pages, published from `main`. The repo root is the document root, there is
+no build step, and `.nojekyll` keeps every file, including `assets/` and `i18n/`.
+
+    https://claytonvlawson.github.io/learnwithclayparentadvisor/
+
+Pages cannot send response headers, so the Content-Security-Policy ships as a
+meta tag in `index.html`; `app.py` and `tests/conftest.py` send the same policy as
+a header, and the smoke suite runs under it. The one thing the header had that
+the meta tag cannot carry is `frame-ancestors`, so clickjacking protection is the
+known gap. Pages also caches for about ten minutes on its own; there is no
+per-file cache configuration to set.
 
 ## License
 
 The code is MIT. The knowledge base it answers from is not in this repository and
 is not covered by that license.
 
-## GitHub Pages demo
-
-A read-only mirror of this page is published from `main` at
-
-    https://claytonvlawson.github.io/learnwithclayparentadvisor/
-
-GitHub Pages serves the repo root as-is (`.nojekyll` keeps every file, including
-`assets/`), so the same `index.html` / `assets/app.js` / `i18n.js` that ship to
-Netlify run there. The page calls the live advisor at
-`https://learnwithclay.ai/api/parent/chat`; that endpoint allows the Pages origin
-`https://claytonvlawson.github.io` in `api/parent/chat.js` of
-`learnwithclay-site`. Without that entry the page still renders and answers with
-the canned preview routing, but no live answers arrive.
+The page calls the live advisor at `https://learnwithclay.ai/api/parent/chat`;
+that endpoint allows the Pages origin `https://claytonvlawson.github.io` in
+`api/parent/chat.js` of `learnwithclay-site`. Without that entry the page still
+renders and answers with the canned preview routing, but no live answers arrive.
 
 Demo limits come from the API, not the page: there is no daily question cap,
 just a 30-per-minute per-IP burst guard in `api/parent/chat.js` of

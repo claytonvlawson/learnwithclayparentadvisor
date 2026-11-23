@@ -22,9 +22,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 class QuietHandler(http.server.SimpleHTTPRequestHandler):
     """Serve the repo root without printing a line per asset.
 
-    It also sends the deploy's Content-Security-Policy, because a CSP violation
-    is exactly the kind of breakage a headless test should catch: the same
-    header ships in netlify.toml and app.py.
+    It also sends the deploy's Content-Security-Policy as a header, because a
+    CSP violation is exactly the kind of breakage a headless test should catch.
+    The live site carries the same policy as a meta tag in index.html (GitHub
+    Pages cannot send headers); app.py sends it as a header.
     """
 
     CSP = (

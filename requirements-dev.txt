@@ -2,6 +2,6 @@
 # These are for hosting it locally and for the browser smoke suite.
 pytest>=8.0
 playwright>=1.40
-# optional: `python3 app.py` runs the same headers as the Netlify deploy
+# optional: `python3 app.py` runs the same headers as the deploy
 fastapi>=0.109
 uvicorn>=0.27
