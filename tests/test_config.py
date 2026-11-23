@@ -147,7 +147,7 @@ def test_the_staged_site_is_only_the_page(tmp_path):
                    check=True, capture_output=True)
     staged = sorted(str(p.relative_to(out)) for p in out.rglob("*") if p.is_file())
 
-    expected = {".nojekyll", "index.html", "aol-figure.png", "win-flag.png",
+    expected = {".nojekyll", "index.html", "i18n.js", "aol-figure.png", "win-flag.png",
                 "assets/app.js", "assets/styles.css", "docs/im-window.png"}
     expected |= {"i18n/" + name for name in os.listdir(os.path.join(ROOT, "i18n"))}
     assert set(staged) == expected, {
@@ -158,6 +158,14 @@ def test_the_staged_site_is_only_the_page(tmp_path):
     # the things that should never be public again
     for leaked in ("app.py", "tests", "README.md", "requirements-dev.txt", "security.json", "tools"):
         assert not (out / leaked).exists(), leaked
+
+    # and every local file the page asks for has to be in there. This is the one
+    # that matters: a missing asset is a broken deploy, not a small omission.
+    html = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
+    wanted = [m for m in re.findall(r'(?:src|href)="([^"]+)"', html)
+              if not m.startswith(("http", "https", "data:", "#", "mailto:", "tel:"))]
+    missing = sorted(w for w in wanted if not (out / w).exists())
+    assert missing == [], "the staged site is missing %r" % missing
 
 
 def test_the_pages_workflow_uses_the_staging_script():
