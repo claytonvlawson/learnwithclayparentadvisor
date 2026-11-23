@@ -112,7 +112,7 @@ Or run the Python host, which sends the same security headers as the deploy:
 
 ## Tests
 
-20 browser tests, no network and no live backend: the advisor endpoint is stubbed
+25 browser tests, no network and no live backend: the advisor endpoint is stubbed
 with Playwright routing. They run under the deploy's Content-Security-Policy,
 because a CSP violation is exactly the kind of breakage a headless run should
 catch.
@@ -126,6 +126,10 @@ catch.
 | `tests/test_shell.py` | the page loads with no console errors, assets are separate files (not re-inlined), the language picker is populated from `i18n.js`, sign-on opens the IM window, screen names are scrubbed |
 | `tests/test_chat.py` | the question that goes on the wire (with `language` and `sessionId`), the answer and citations reaching the transcript, the fallback when the API fails, and that pasted or dropped HTML cannot inject markup |
 | `tests/test_i18n.py` | switching language retranslates the document, the choice survives sign-on, switching back to English is lossless, Arabic sets `dir="rtl"` |
+| `tests/test_review_fixes.py` | the three defects found in the November 2026 review: citation text staying inside its attribute, a second Enter not starting a second request, and the offline crisis route firing in Spanish and Chinese |
+
+`docs/REVIEW.md` is that review: what holds up, what was fixed, and what is
+still open, each item with the command that shows it.
 
 `tools/shots.py` regenerates the two screenshots above from the real page.
 `tools/split_site.py` is the one-shot migration that moved the CSS and JS out of
