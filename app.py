@@ -17,25 +17,13 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 
+import policy
+
 ROOT = Path(__file__).resolve().parent
 
-# Kept byte-identical to the meta policy in index.html (GitHub Pages cannot
-# send headers, so the live policy is a meta tag) and to tests/conftest.py. If
-# the policy changes, change all three, and the smoke test (tests/test_shell.py)
-# will notice a violation as a console error rather than as a silent difference
-# between local and live.
-SECURITY_HEADERS = {
-    "X-Frame-Options": "SAMEORIGIN",
-    "X-Content-Type-Options": "nosniff",
-    "Referrer-Policy": "strict-origin-when-cross-origin",
-    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
-    "Content-Security-Policy": (
-        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
-        "img-src 'self' data:; font-src 'self' data:; "
-        "connect-src 'self' https://learnwithclay.ai; frame-ancestors 'self'; "
-        "object-src 'none'; base-uri 'self'; form-action 'self'"
-    ),
-}
+# The policy lives in security.json, shared with the test fixture and with the
+# meta tag in index.html (GitHub Pages cannot send headers). See policy.py.
+SECURITY_HEADERS = policy.HEADERS
 
 app = FastAPI(title="Parent Advisor: AIM Edition", docs_url=None, redoc_url=None)
 
@@ -48,7 +36,7 @@ def healthz() -> str:
 @app.api_route("/", methods=["GET", "HEAD"], response_class=HTMLResponse)
 def index() -> FileResponse:
     # Always revalidate the markup: it carries the page structure and the CSP
-    # applies to it. The assets are cached for an hour by the deploy.
+    # applies to it. GitHub Pages leaves its own caching to itself.
     headers = dict(SECURITY_HEADERS, **{"Cache-Control": "no-cache"})
     return FileResponse(ROOT / "index.html", media_type="text/html", headers=headers)
 

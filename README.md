@@ -48,6 +48,7 @@ when a visitor picks a language other than English.
 | `assets/styles.css` | the whole stylesheet, including the 18-language font stacks and RTL rules |
 | `assets/app.js` | all behaviour: prefs, language wiring, windows, menus, composer, chat, citations, sanitizer |
 | `i18n.js` | the translation runtime: language list, English templates, and the loader |
+| `security.json` / `policy.py` | the security headers, in one place, read by `app.py` and the test server and mirrored by the meta tag |
 | `i18n/<code>.js` | one translation table per language, keyed by English text, fetched when that language is selected |
 
 `assets/app.js` opens with a structural map of its own regions, in order: config
@@ -116,12 +117,14 @@ Or run the Python host, which sends the same security headers as the deploy:
 
 ## Tests
 
-31 browser tests, no network and no live backend: the advisor endpoint is stubbed
-with Playwright routing. They run under the deploy's Content-Security-Policy,
-because a CSP violation is exactly the kind of breakage a headless run should
-catch.
+68 tests. 49 run in the browser with no network and no live backend: the advisor
+endpoint is stubbed with Playwright routing, and the suite runs under the page's
+Content-Security-Policy, because a CSP violation is exactly the kind of breakage a
+headless run should catch. The other 19 are static checks that need no browser:
+image weight and orphans, pinned dependencies, one policy in three places, and
+the translation tables against the page's copy.
 
-    pip install -r requirements-dev.txt
+    pip install -r requirements-dev.txt -c constraints.txt
     python -m playwright install chromium
     python -m pytest
 
@@ -132,6 +135,11 @@ catch.
 | `tests/test_i18n.py` | switching language retranslates the document, the choice survives sign-on, switching back to English is lossless, Arabic sets `dir="rtl"` |
 | `tests/test_review_fixes.py` | the three defects found in the November 2026 review: citation text staying inside its attribute, a second Enter not starting a second request, and the offline crisis route firing in Spanish and Chinese |
 | `tests/test_i18n_payload.py` | one translation file per language: English fetches none, selecting a language fetches that one, a loaded language is not fetched twice, and every advertised language has a file |
+| `tests/test_ui.py` | the chrome the suite used to skip: a menubar opens and Escape closes it, preferences survive a reload, the warn meter runs out and disables, saving downloads the transcript, the transcript is `aria-busy` during a reveal, one `h1`, and a share card with absolute URLs |
+| `tests/test_routing.py` | where a question routes when the backend is down: ten cases, including the two that used to misfire and the plainest English disclosure |
+| `tests/test_assets.py` | no unreferenced image, no root PNG over 20 KB, the logo is no more than 2x its display size |
+| `tests/test_config.py` | the policy in `security.json` matches all three consumers, every dependency is pinned in `constraints.txt`, CI applies the pins, and no home path is committed |
+| `tests/test_i18n_coverage.py` | every language has the same keys, every canned block exists everywhere, no key translates copy that is gone, and the templates carry the English placeholders |
 
 `docs/REVIEW.md` is that review: what holds up, what was fixed, and what is
 still open, each item with the command that shows it.
@@ -159,9 +167,11 @@ Not done, in the order I would fix it:
    the five-way split (state, i18n wiring, composer, sanitizer, render) the CSS
    and markup split implies. The browser tests exist now, which is what makes that
    next split safe; it is not done yet.
-3. **Vocabulary is duplicated in three places**: the English strings in
-   `assets/app.js`, the table in `i18n.js`, and the markup. A string added to one
-   and not the others silently falls back to English.
+3. **Vocabulary is still written in three places** (the English strings in
+   `assets/app.js`, the per-language tables, and the markup), but it no longer
+   fails silently: `tests/test_i18n_coverage.py` fails when a string is added to
+   the page and not to the table, and when a table translates copy that has been
+   edited away.
 4. **No visual regression baseline.** Layout assertions are structural, so a CSS
    change that breaks alignment but not the DOM would pass.
 5. **The backend is not in this repo**, so the contract above is documented from
@@ -176,8 +186,13 @@ intact, and accessibility in how we work.
 
 ## Deploy
 
-GitHub Pages, published from `main`. The repo root is the document root, there is
-no build step, and `.nojekyll` keeps every file, including `assets/` and `i18n/`.
+GitHub Pages, published from `main` by `.github/workflows/pages.yml`. The page
+has no build step, but the deploy stages only the files the site serves, because
+a static host cannot be told to ignore a source file: `tools/stage_site.sh`
+copies `index.html`, `assets/`, `i18n/`, the two images and the social card into
+`_site/`, and that directory is what gets uploaded. Pages is set to the Actions
+source rather than the branch, so `app.py`, `tests/` and the README are not
+reachable from the public URL.
 
     https://claytonvlawson.github.io/learnwithclayparentadvisor/
 

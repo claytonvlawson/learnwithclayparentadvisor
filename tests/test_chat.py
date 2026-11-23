@@ -56,17 +56,8 @@ def test_failed_request_falls_back_instead_of_hanging(app_page, stub_advisor):
     app_page.unroute("**/api/parent/chat")
     app_page.route("**/api/parent/chat", lambda route: route.abort())
     ask(app_page, "what are the first steps")
-    # The answer arrives by typewriter, so poll for the fallback wording
-    # rather than reading the transcript once.
-    import time
-    deadline = time.time() + 45
-    body = ""
-    while time.time() < deadline:
-        body = app_page.inner_text("#chatTranscript").lower()
-        if "preview" in body or "could not be reached" in body:
-            return
-        app_page.wait_for_timeout(400)
-    raise AssertionError("no fallback answer appeared: %s" % body[:400])
+    # wait_for_text polls in-page, so this is one condition rather than a loop
+    wait_for_text(app_page, "could not be reached", timeout=20, selector="#chatTranscript")
 
 
 def test_sanitizer_strips_a_dangerous_link_from_the_api(app_page):
