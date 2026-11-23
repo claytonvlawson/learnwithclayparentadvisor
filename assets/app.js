@@ -22,7 +22,15 @@
   var $$ = function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };
   var SITE = 'https://learnwithclay.ai';
   var CONSULT = 'https://calendly.com/clayton-learnwithclay';
-  var API = SITE + '/api/parent/chat';
+  /* The advisor service, reached through its own Tailscale Funnel. It used to
+     be proxied by a Vercel function on learnwithclay.ai; that account can be
+     paused (it was on 2026-11-23: 402 DEPLOYMENT_DISABLED) and pausing it took
+     the whole advisor down with it, because the page and the proxy shared the
+     account. The funnel answers the same contract from the same server, one
+     hop shorter. `/public/chat` is the token-free browser route: a browser
+     cannot hold a bearer token, so it is guarded by an Origin allowlist and a
+     per-visitor limit instead. */
+  var API = 'https://jetson.tail155e26.ts.net/parent/public/chat';
 
   /* One stable id per browser, so the advisor's question budget follows the
      visitor rather than the network they happen to share with a whole school

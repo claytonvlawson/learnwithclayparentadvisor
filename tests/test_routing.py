@@ -7,7 +7,7 @@ used to miss the crisis block entirely.
 """
 import pytest
 
-from conftest import sign_on
+from conftest import API_GLOB, sign_on
 
 CASES = [
     # question, the canned block it must reach
@@ -26,8 +26,8 @@ CASES = [
 
 @pytest.mark.parametrize("question,expected", CASES)
 def test_question_routes_to_the_expected_block(app_page, question, expected):
-    app_page.unroute("**/api/parent/chat")
-    app_page.route("**/api/parent/chat", lambda route: route.abort())
+    app_page.unroute(API_GLOB)
+    app_page.route(API_GLOB, lambda route: route.abort())
     sign_on(app_page)
     app_page.fill("#chatInput", question)
     app_page.press("#chatInput", "Enter")
@@ -38,8 +38,8 @@ def test_question_routes_to_the_expected_block(app_page, question, expected):
 
 
 def test_the_crisis_block_leads_with_the_lifeline(app_page):
-    app_page.unroute("**/api/parent/chat")
-    app_page.route("**/api/parent/chat", lambda route: route.abort())
+    app_page.unroute(API_GLOB)
+    app_page.route(API_GLOB, lambda route: route.abort())
     sign_on(app_page)
     app_page.fill("#chatInput", "I don't want to live anymore")
     app_page.press("#chatInput", "Enter")

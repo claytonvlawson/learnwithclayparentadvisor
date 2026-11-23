@@ -4,7 +4,7 @@ The advisor API is stubbed, so these assert the front end's contract: what it
 sends, and that an answer plus its citations reach the transcript instead of
 being swallowed by a render error.
 """
-from conftest import sign_on, wait_for_text
+from conftest import API_GLOB, sign_on, wait_for_text
 
 
 def ask(app_page, text):
@@ -53,16 +53,16 @@ def test_non_english_question_carries_an_english_hint(app_page, stub_advisor):
 
 def test_failed_request_falls_back_instead_of_hanging(app_page, stub_advisor):
     # Replace the stub with a hard failure: the preview answer must appear.
-    app_page.unroute("**/api/parent/chat")
-    app_page.route("**/api/parent/chat", lambda route: route.abort())
+    app_page.unroute(API_GLOB)
+    app_page.route(API_GLOB, lambda route: route.abort())
     ask(app_page, "what are the first steps")
     # wait_for_text polls in-page, so this is one condition rather than a loop
     wait_for_text(app_page, "could not be reached", timeout=20, selector="#chatTranscript")
 
 
 def test_sanitizer_strips_a_dangerous_link_from_the_api(app_page):
-    app_page.unroute("**/api/parent/chat")
-    app_page.route("**/api/parent/chat", lambda route: route.fulfill(
+    app_page.unroute(API_GLOB)
+    app_page.route(API_GLOB, lambda route: route.fulfill(
         status=200,
         content_type="application/json",
         body='{"answer":"See the note.","citations":['

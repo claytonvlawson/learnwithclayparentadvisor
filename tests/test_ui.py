@@ -6,7 +6,7 @@ moves: these assert behaviour a visitor would notice, not structure.
 """
 import json
 
-from conftest import sign_on, wait_for_text, wait_for_text_change
+from conftest import API_GLOB, sign_on, wait_for_text, wait_for_text_change
 
 
 def open_menu(page, window, label):
@@ -74,8 +74,8 @@ def test_the_transcript_is_busy_while_an_answer_reveals(app_page):
     def hold(route):
         held.append(route)
 
-    app_page.unroute("**/api/parent/chat")
-    app_page.route("**/api/parent/chat", hold)
+    app_page.unroute(API_GLOB)
+    app_page.route(API_GLOB, hold)
     sign_on(app_page)
     app_page.fill("#chatInput", "what are the first steps")
     app_page.press("#chatInput", "Enter")

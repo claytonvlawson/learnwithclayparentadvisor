@@ -94,9 +94,16 @@ def app_page(browser, base_url):
         context.close()
 
 
+# The endpoint the page posts to, as a Playwright glob. One constant so a host
+# change is one edit: when the page moved off the Vercel proxy (2026-11-23) the
+# old literal pattern in 22 route calls stopped matching, and eight tests failed
+# looking like render bugs rather than an un-stubbed network.
+API_GLOB = "**/public/chat"
+
+
 @pytest.fixture
 def stub_advisor(app_page):
-    """Replace /api/parent/chat with a canned answer.
+    """Replace the advisor endpoint with a canned answer.
 
     Returns the list of request bodies the page sent, so a test can assert what
     the front end actually put on the wire.
@@ -121,7 +128,7 @@ def stub_advisor(app_page):
             }),
         )
 
-    app_page.route("**/api/parent/chat", handler)
+    app_page.route(API_GLOB, handler)
     return sent
 
 

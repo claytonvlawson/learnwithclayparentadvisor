@@ -63,4 +63,26 @@ else
   fail=1
 fi
 
+# 4. the advisor endpoint itself answers. An empty question is refused with 400
+#    before any generation, so this probe costs nothing and still proves the
+#    route, the Origin allowlist and CORS are live. 429 is also fine: it means
+#    the per-visitor limit saw this runner, which only happens on a live route.
+#
+#    This step exists because the page can be perfect while every answer is
+#    dead: on 2026-11-23 the page served 200 and the advisor had answered
+#    nothing since 2026-11-14, because the API was a Vercel function on a paused
+#    account answering 402 DEPLOYMENT_DISABLED. Nothing in this script looked at
+#    it, so nothing failed.
+API_URL=${API_URL:-https://jetson.tail155e26.ts.net/parent/public/chat}
+PAGE_ORIGIN=${PAGE_ORIGIN:-https://claytonvlawson.github.io}
+api_status=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 \
+  -X POST "$API_URL" -H 'Content-Type: application/json' \
+  -H "Origin: $PAGE_ORIGIN" -d '{}' 2>/dev/null || echo 000)
+case $api_status in
+  400) echo "ok   400 advisor endpoint (reachable, refuses an empty question)" ;;
+  429) echo "ok   429 advisor endpoint (reachable, rate limited)" ;;
+  402) echo "FAIL 402 advisor endpoint: the host is paused for payment"; fail=1 ;;
+  *)   echo "FAIL $api_status advisor endpoint (expected 400 or 429)"; fail=1 ;;
+esac
+
 exit $fail

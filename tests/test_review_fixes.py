@@ -11,7 +11,7 @@ Each of these reproduced against the code before the fix:
 """
 import json
 
-from conftest import sign_on, wait_for_text
+from conftest import API_GLOB, sign_on, wait_for_text
 
 CRISIS_SENTINEL = "#chatTranscript [data-canned='crisisAnswer']"
 
@@ -32,8 +32,8 @@ def test_citation_text_cannot_add_attributes(app_page):
             "url": 'https://example.org/note" onmouseover="window.__hover=1',
         }],
     })
-    app_page.unroute("**/api/parent/chat")
-    app_page.route("**/api/parent/chat", lambda r: r.fulfill(
+    app_page.unroute(API_GLOB)
+    app_page.route(API_GLOB, lambda r: r.fulfill(
         status=200, content_type="application/json", body=payload))
     sign_on(app_page)
     _answer(app_page, "give me a cited answer")
@@ -70,8 +70,8 @@ def test_second_question_is_ignored_while_one_is_in_flight(app_page):
             sent.append({})
         held.append(route)
 
-    app_page.unroute("**/api/parent/chat")
-    app_page.route("**/api/parent/chat", hold)
+    app_page.unroute(API_GLOB)
+    app_page.route(API_GLOB, hold)
     sign_on(app_page)
 
     _answer(app_page, "first question")
@@ -95,8 +95,8 @@ def test_second_question_is_ignored_while_one_is_in_flight(app_page):
 
 def test_spanish_crisis_question_reaches_the_crisis_route(app_page):
     # The API is down; this is the local fallback path.
-    app_page.unroute("**/api/parent/chat")
-    app_page.route("**/api/parent/chat", lambda route: route.abort())
+    app_page.unroute(API_GLOB)
+    app_page.route(API_GLOB, lambda route: route.abort())
     sign_on(app_page)
     app_page.select_option("#langPickBuddy", "es")
     _answer(app_page, "quiero morir, ya no aguanto")
@@ -107,8 +107,8 @@ def test_spanish_crisis_question_reaches_the_crisis_route(app_page):
 def test_english_crisis_question_still_reaches_the_crisis_route(app_page):
     # The regression guard for the pattern sets: adding languages must not
     # dislodge the original path.
-    app_page.unroute("**/api/parent/chat")
-    app_page.route("**/api/parent/chat", lambda route: route.abort())
+    app_page.unroute(API_GLOB)
+    app_page.route(API_GLOB, lambda route: route.abort())
     sign_on(app_page)
     _answer(app_page, "my husband is hitting me and I want to die")
     app_page.wait_for_selector(CRISIS_SENTINEL, timeout=30000)
@@ -116,8 +116,8 @@ def test_english_crisis_question_still_reaches_the_crisis_route(app_page):
 
 def test_chinese_crisis_question_reaches_the_crisis_route(app_page):
     # A non-Latin script must survive the route, not just the romanised ones.
-    app_page.unroute("**/api/parent/chat")
-    app_page.route("**/api/parent/chat", lambda route: route.abort())
+    app_page.unroute(API_GLOB)
+    app_page.route(API_GLOB, lambda route: route.abort())
     sign_on(app_page)
     app_page.select_option("#langPickBuddy", "zh")
     _answer(app_page, "我想死")

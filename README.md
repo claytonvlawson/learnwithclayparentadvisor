@@ -16,7 +16,7 @@ they first talked to strangers about hard things.
 ![The advisor window after one question](docs/im-window.png)
 
 - Live: https://claytonvlawson.github.io/learnwithclayparentadvisor/
-- Backend it calls: https://learnwithclay.ai/api/parent/chat
+- Backend it calls: https://jetson.tail155e26.ts.net/parent/public/chat
 - No build step, no framework, no dependencies in the shipped page
 
 ## What it does
@@ -70,7 +70,7 @@ Screen to code:
 
 One endpoint. The page posts a question and expects an answer plus citations.
 
-    POST https://learnwithclay.ai/api/parent/chat
+    POST https://jetson.tail155e26.ts.net/parent/public/chat
     Content-Type: application/json
 
     {"question": "...", "sessionId": "...", "language": "es"}
@@ -217,12 +217,20 @@ comments on) an issue rather than only reddening a tab. Run it by hand:
 The code is MIT. The knowledge base it answers from is not in this repository and
 is not covered by that license.
 
-The page calls the live advisor at `https://learnwithclay.ai/api/parent/chat`;
-that endpoint allows the Pages origin `https://claytonvlawson.github.io` in
-`api/parent/chat.js` of `learnwithclay-site`. Without that entry the page still
-renders and answers with the canned preview routing, but no live answers arrive.
+The page calls the live advisor at
+`https://jetson.tail155e26.ts.net/parent/public/chat`, the token-free browser
+route on the advisor service itself (published through a Tailscale Funnel). It
+used to go through `https://learnwithclay.ai/api/parent/chat`, a Vercel function
+on the same account that serves this page; when that account paused on
+2026-11-23 every request answered `402 DEPLOYMENT_DISABLED` and the advisor went
+down with it. The funnel removes that shared failure: nothing between this page
+and the server can be suspended independently of it.
 
-Demo limits come from the API, not the page: there is no daily question cap,
-just a 30-per-minute per-IP burst guard in `api/parent/chat.js` of
-`learnwithclay-site`. Set `PARENT_DAILY_LIMIT` in the Vercel project to put a
-daily cap back.
+That route has no bearer token, because a browser cannot hold one. It is guarded
+instead by an Origin allowlist (`https://claytonvlawson.github.io`, the
+learnwithclay.ai hosts and the old Netlify preview) plus a per-visitor limit:
+8 questions a minute and 40 a day, both keyed on the visitor's address. Over the
+burst limit the page shows "That is a lot of questions"; over the daily limit it
+shows the Calendly line. Both limits live in `parent_advisor_server.py` on the
+advisor host, not in this repository.
+
