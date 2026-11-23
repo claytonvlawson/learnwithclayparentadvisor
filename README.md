@@ -203,6 +203,15 @@ the meta tag cannot carry is `frame-ancestors`, so clickjacking protection is th
 known gap. Pages also caches for about ten minutes on its own; there is no
 per-file cache configuration to set.
 
+The deploy is probed from the outside every six hours by `.github/workflows/uptime.yml`,
+which runs `tools/check_live.sh`: every file a first visit asks for must answer
+200, the repository files must answer 404, and the runtime must still be small
+enough that the language tables have not moved back into it. A failure opens (or
+comments on) an issue rather than only reddening a tab. Run it by hand:
+
+    sh tools/check_live.sh
+    BASE_URL=http://127.0.0.1:8020 sh tools/check_live.sh
+
 ## License
 
 The code is MIT. The knowledge base it answers from is not in this repository and
