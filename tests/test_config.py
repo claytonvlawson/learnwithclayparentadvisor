@@ -166,3 +166,11 @@ def test_the_pages_workflow_uses_the_staging_script():
     assert "actions/deploy-pages" in workflow
     # a workflow that starts copying the repo root defeats the point
     assert "path: ." not in workflow and "path: ./" not in workflow
+
+
+def test_ci_pins_the_runner_too():
+    # ubuntu-latest moved to 26.04 and the pinned Playwright could not install a
+    # browser there; a moving runner base is version drift one level down.
+    workflow = read(".github/workflows/tests.yml")
+    assert "runs-on: ubuntu-24.04" in workflow
+    assert "runs-on: ubuntu-latest" not in workflow
