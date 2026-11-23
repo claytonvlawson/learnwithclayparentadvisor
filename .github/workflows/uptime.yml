@@ -1,0 +1,42 @@
+name: uptime
+
+# The deploy fails quietly. When Netlify hit its usage cap the live URL returned
+# 503 and nobody knew until a review probed it, and a staged deploy that drops a
+# file looks identical to a working one from the repository. This probes the
+# public URL from the outside every six hours.
+on:
+  schedule:
+    - cron: "23 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Probe the live site
+        run: sh tools/check_live.sh
+      - name: Report the failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          title="Live site check failed"
+          run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          body="\`tools/check_live.sh\` failed at $(date -u +%FT%TZ). The job log names the path:
+
+          $run_url
+
+          Run it by hand with \`sh tools/check_live.sh\`."
+          existing=$(gh issue list --state open --search "$title in:title" --json number --jq '.[0].number // empty')
+
+          if [ -z "$existing" ]; then
+            gh issue create --title "$title" --body "$body" --label P1
+          else
+            gh issue comment "$existing" --body "Still failing at $(date -u +%FT%TZ): $run_url"
+          fi
