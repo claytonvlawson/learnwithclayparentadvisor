@@ -20,6 +20,8 @@ cp "$root/index.html" "$out/"
 cp "$root/.nojekyll" "$out/"
 cp "$root/assets/styles.css" "$root/assets/app.js" "$out/assets/"
 cp "$root"/i18n/*.js "$out/i18n/"
+# the runtime at the repo root, which is a different file from the i18n/ directory
+cp "$root/i18n.js" "$out/"
 
 # the two images the markup draws, and the social card the meta tag points at
 cp "$root/aol-figure.png" "$root/win-flag.png" "$out/"
