@@ -1351,6 +1351,7 @@
     refreshInert();
     ['buddylist', 'howtowin', 'imwin'].forEach(function (id) { setWin(id, 'closed'); });
     transcript.innerHTML = '';
+    removeTyping(); inFlight = false; sendBtn.disabled = false;
     $('#snInput').value = prefs.sn || 'VisitingParent';
     $('#snInput').focus();
     tone(523, 0, 0.1, 0.04); tone(392, 0.1, 0.14, 0.04);
@@ -1363,6 +1364,48 @@
     /want to die/i, /wanna die/i, /hurt(ing)? myself/i, /self[- ]?harm/i,
     /overdose/i, /abus(e|ed|ive)/i, /hitting me/i, /beat(ing)? me/i,
     /emergency/i, /crisis/i, /unsafe/i, /scared for my (child|kid|son|daughter)/i
+  ];
+
+  /* The page ships 18 languages, and this local router is the safety path that
+     still works when the API is unreachable. English-only triggers sent a
+     Spanish "quiero morir" to the generic preview answer, so the crisis terms
+     are repeated per language. A false hit shows the resources, which is the
+     safe direction to be wrong in; a miss is not. */
+  var CRISIS_I18N = [
+    // Spanish
+    /suicid|quiero morir|me quiero morir|matarme|morirme|autolesi|me corto|abuso|me pega|me golpea|peligro|no quiero vivir/i,
+    // French
+    /suicid|me tuer|mourir|automutilation|abus|me frappe|danger|plus envie de vivre/i,
+    // Portuguese
+    /suic[ií]d|me matar|matar-me|morrer|automutila|abuso|me bate|perigo|n[ãa]o quero viver/i,
+    // Haitian Creole
+    /\bswisid|touye m|mouri|abi|bat mwen|danje/i,
+    // Tagalog
+    /pagpapakamatay|magpakamatay|patayin|mamatay|pang-aabuso|sinasaktan|panganib/i,
+    // Vietnamese
+    /tự tử|tự sát|giết|chết|lạm dụng|đánh đập|nguy hiểm/i,
+    // Korean
+    /자살|자해|죽고 싶|죽이|학대|때리|폭력/,
+    // Japanese
+    /自殺|自傷|死にたい|殺す|虐待|暴力/,
+    // Chinese
+    /自杀|自残|想死|杀死|虐待|暴力/,
+    // Russian
+    /суицид|самоубий|убить|умереть|насили|избива/i,
+    // Arabic
+    /انتحار|إيذاء النفس|أقتل نفسي|أريد أن أموت|إساءة|يضربني|خطر/,
+    // Urdu
+    /خودکشی|خود کو مار|زیادتی|تشدد/,
+    // Hindi
+    /आत्महत्या|खुद को मार|मरना चाहता|दुर्व्यवहार|हिंसा/,
+    // Nepali
+    /आत्महत्या|आफूलाई मार्न|मर्न चाहन्छु|दुर्व्यवहार/,
+    // Bengali
+    /আত্মহত্যা|নিজেকে মারতে|মরে যেতে|নির্যাতন/,
+    // Amharic
+    /ራስን መግደል|ራሴን መግደል|መሞት|መግደል|ጥቃት/,
+    // Somali
+    /\b(isdil|dil|dhimasho|xadgudub)\b/i
   ];
 
   var crisisAnswer =
@@ -1429,6 +1472,9 @@
   function routeKey(q) {
     for (var i = 0; i < CRISIS_PATTERNS.length; i++) {
       if (CRISIS_PATTERNS[i].test(q)) return 'crisisAnswer';
+    }
+    for (var j = 0; j < CRISIS_I18N.length; j++) {
+      if (CRISIS_I18N[j].test(q)) return 'crisisAnswer';
     }
     if (/depriv/i.test(q) || /delay(ed)? (in )?(speech|language)/i.test(q) || /not (talk|speak)ing/i.test(q)) return 'deprivationAnswer';
     if (/\b(asl|sign(ing| language)?)\b/i.test(q) || /\bci\b/i.test(q) || /implant/i.test(q) || /cochlear/i.test(q)) return 'aslCiAnswer';
@@ -1544,6 +1590,15 @@
     var div = document.createElement('div');
     div.textContent = String(text);
     return div.innerHTML;
+  }
+  /* Text escaping is not attribute escaping: textContent -> innerHTML leaves
+     double quotes alone, so a value interpolated into title="..." or href="..."
+     could close the attribute and add its own. Anything that lands in an
+     attribute goes through here instead. */
+  function escapeAttr(text) {
+    return String(text == null ? '' : text)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
   /* classic AIM smileys: ASCII emoticons become real glyphs everywhere text is shown */
@@ -1711,14 +1766,23 @@
     return out.join('<br>');
   }
 
+  /* One question at a time. The Send button is disabled while a request is out,
+     but Enter in the composer and the suggestion chips do not go through the
+     button, so a second question used to start a second request: two answers
+     interleaved, the typing row removed from under the first, and Send
+     re-enabled while the first response was still coming. */
+  var inFlight = false;
+
   function showTyping() {
     var line = document.createElement('div');
-    line.className = 'mline';
-    line.id = 'typing';
+    line.className = 'mline is-typing';
     line.setAttribute('data-who', 'sys');
     line.innerHTML = '<span class="sys">' + escapeHtml(i18n.t('VaultAdvisor is searching the vault...')) + '</span>';
     transcript.appendChild(line);
     transcript.scrollTop = transcript.scrollHeight;
+  }
+  function removeTyping() {
+    $$('.mline.is-typing', transcript).forEach(function (n) { n.remove(); });
   }
 
   function renderCitations(citations) {
@@ -1727,9 +1791,10 @@
     citations.slice(0, 8).forEach(function (c) {
       var title = String(c.title || c.source || 'vault note');
       var link = safeHref(c.url || (c.doi ? ('https://doi.org/' + c.doi) : ''));
-      var full = c.citation ? ' title="' + escapeHtml(String(c.citation).slice(0, 400)) + '"' : '';
+      // both of these land in attributes, so both use the attribute escaper
+      var full = c.citation ? ' title="' + escapeAttr(String(c.citation).slice(0, 400)) + '"' : '';
       if (link) {
-        rows += '<li' + full + '>' + escapeHtml(title) + ' <a class="doi-link" href="' + escapeHtml(link) +
+        rows += '<li' + full + '>' + escapeHtml(title) + ' <a class="doi-link" href="' + escapeAttr(link) +
           '" target="_blank" rel="noopener noreferrer">' + i18n.t('read the paper') + '</a></li>';
       } else {
         rows += '<li' + full + '>' + escapeHtml(title) + '</li>';
@@ -1751,10 +1816,11 @@
   function ask(q, richHtml) {
     q = (q || '').trim();
     if (!q) { toast('Type a question first'); input.focus(); return; }
+    if (inFlight) { input.focus(); return; }
+    inFlight = true;
     addMessage(richHtml || renderMarkdownLite(q), 'parent');
     input.innerHTML = '';
-    var typingEl = document.getElementById('typing');
-    if (typingEl) typingEl.remove();
+    removeTyping();
     showTyping();
     sendBtn.disabled = true;
 
@@ -1762,8 +1828,8 @@
     function finish(html) {
       if (done) return;
       done = true;
-      var t = document.getElementById('typing');
-      if (t) t.remove();
+      inFlight = false;
+      removeTyping();
       sendBtn.disabled = false;
       addMessage(html, 'advisor');
     }
@@ -1777,8 +1843,8 @@
     function reveal(answerText, tailHtml) {
       if (done) return;
       done = true;
-      var t = document.getElementById('typing');
-      if (t) t.remove();
+      inFlight = false;
+      removeTyping();
       sendBtn.disabled = false;
       var line = addMessage('', 'advisor');
       var body = document.createElement('span');
