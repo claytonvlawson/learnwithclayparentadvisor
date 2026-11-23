@@ -80,23 +80,26 @@ Acceptance criteria: a suicide disclosure in any shipped language reaches the
 
 ## P1 (open, one issue each)
 
-4. **`i18n.js` ships 359 KB raw / 85 KB gzipped to every visitor**, and is
+4. **Resolved.** **`i18n.js` shipped 359 KB raw / 85 KB gzipped to every visitor**, and was
    parsed before `app.js`. That is 39 percent of the page's gzipped weight
    (578 KB raw, 217 KB gz measured with `gzip -9`) for a reader who needs none
-   of it. Split the table per language and load one on selection; English
-   should load nothing.
+   of it. The table is now `i18n/<code>.js`, fetched on selection; English loads
+   nothing. English first paint is 36 KB gzipped against 115 KB, and
+   `tests/test_i18n_payload.py` holds the behaviour.
 5. **Images.** `aol-figure.png` is 328x360 and 82 KB to paint a 30x33 logo
    (about 2 KB re-exported at 2x). `aim-logo.png` (20 KB) has zero references
    in the repo. `win-flag.png` is fine.
-6. **The deploy publishes the repository, not the site.** `netlify.toml` sets
-   `publish = "."`, and the Pages mirror serves the root as-is:
+6. **The deploy publishes the repository, not the site.** GitHub Pages serves
+   the root as-is, and the retired Netlify project set `publish = "."`:
    `curl -o /dev/null -w "%{http_code}" .../app.py` -> 200, and the same for
    `tests/test_chat.py`. `app.py` has the same shape: `StaticFiles(directory=ROOT)`
    serves everything under the root, so `HOST=0.0.0.0` publishes `.git/config`.
    A `public/` publish directory, or an extension allowlist in `app.py`, closes it.
-7. **The advertised live URL is down.** `https://learnwithclayparentadvisor.netlify.app/`
-   returns 503 `{"error":"usage_exceeded"}`. The Pages mirror is the only copy
-   that answers. Nothing in the repo watches this; a scheduled `curl -f` would.
+7. **Resolved by retiring Netlify.** The live URL
+   `https://learnwithclayparentadvisor.netlify.app/` returns 503
+   `{"error":"usage_exceeded"}`. GitHub Pages is now the only deploys target, so
+   the dead link is gone; an uptime check is still worth adding, because nothing
+   in the repo would report a broken Pages build either.
 8. **The suite is not reproducible.** `requirements-dev.txt` uses `>=` for
    pytest, playwright, fastapi and uvicorn, and CI installs it unpinned. A
    Playwright major changes `route.fulfill` and `inner_text` semantics, so the
@@ -117,9 +120,9 @@ Acceptance criteria: a suicide disclosure in any shipped language reaches the
 
 ## P2
 
-11. The security policy is copy-pasted into `netlify.toml`, `app.py` and
-    `tests/conftest.py`, and two of the three comments admit drift is the risk.
-    Generate all three from one file and assert they match.
+11. The security policy is copy-pasted into the meta tag in `index.html`,
+    `app.py` and `tests/conftest.py`, and two of the three comments say that
+    drift is the risk. Generate all three from one file and assert they match.
 12. `routeKey` matches `/right(s)?\b/` and `/school/` anywhere, so "my child
     isn't sleeping right" returns the CRPD answer, and `/emergency/` fires a
     crisis block for "emergency contact for the audiologist". Tighten to phrases.

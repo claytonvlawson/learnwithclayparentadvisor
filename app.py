@@ -4,8 +4,8 @@
 The page is a static single-page app: index.html (markup), assets/styles.css,
 assets/app.js (behaviour) and i18n.js (the string table). There is no server
 logic to port, so this module does the two jobs a static host must do: serve
-the files, and send the same security headers the Netlify deploy sends, so a
-local run cannot pass a check the deploy would fail.
+the files, and send the same security headers the deploy carries, so a local
+run cannot pass a check the deploy would fail.
 
 Run:  python3 app.py            -> http://127.0.0.1:8020
       PORT=9000 python3 app.py
@@ -19,9 +19,11 @@ from fastapi.staticfiles import StaticFiles
 
 ROOT = Path(__file__).resolve().parent
 
-# Kept byte-identical to netlify.toml. If the deploy policy changes, change
-# both, and the smoke test (tests/test_shell.py) will notice a violation as a
-# console error rather than as a silent difference between local and live.
+# Kept byte-identical to the meta policy in index.html (GitHub Pages cannot
+# send headers, so the live policy is a meta tag) and to tests/conftest.py. If
+# the policy changes, change all three, and the smoke test (tests/test_shell.py)
+# will notice a violation as a console error rather than as a silent difference
+# between local and live.
 SECURITY_HEADERS = {
     "X-Frame-Options": "SAMEORIGIN",
     "X-Content-Type-Options": "nosniff",

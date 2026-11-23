@@ -104,19 +104,22 @@
 
   function setLang(code, announce) {
     var m = i18n.metaFor(code);
-    i18n.set(m.code);
     prefs.lang = m.code;
     savePrefs();
     paintLangSelects();
-    // canned preview answers are shipped per language, so re-render the ones
-    // already on screen instead of trying to translate them in place
-    $$('[data-canned]').forEach(function (el) {
-      el.innerHTML = i18n.canned(el.getAttribute('data-canned'));
+    // The language table is its own file now, fetched on first selection, so
+    // anything built from the table waits for it to arrive.
+    return i18n.set(m.code).then(function () {
+      // canned preview answers are shipped per language, so re-render the ones
+      // already on screen instead of trying to translate them in place
+      $$('[data-canned]').forEach(function (el) {
+        el.innerHTML = i18n.canned(el.getAttribute('data-canned'));
+      });
+      i18n.apply(document.body);
+      paintGreeting(false);
+      paintSound();
+      if (announce) toast(i18n.tpl('languageChanged', { name: m.native }));
     });
-    i18n.apply(document.body);
-    paintGreeting(false);
-    paintSound();
-    if (announce) toast(i18n.tpl('languageChanged', { name: m.native }));
   }
 
 
