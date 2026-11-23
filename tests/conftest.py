@@ -8,15 +8,23 @@ A fixture named `page` is deliberately avoided: pytest-playwright owns that
 name, and shadowing it produces a recursive-dependency error.
 """
 import http.server
+import importlib.util
 import json
 import os
 import socket
 import threading
 
 import pytest
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import sync_playwright
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# One source for the policy: security.json, read through policy.py, so the test
+# server, app.py and the meta tag in index.html cannot drift apart.
+_spec = importlib.util.spec_from_file_location("pa_policy", os.path.join(ROOT, "policy.py"))
+_policy = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_policy)
 
 
 class QuietHandler(http.server.SimpleHTTPRequestHandler):
@@ -28,12 +36,7 @@ class QuietHandler(http.server.SimpleHTTPRequestHandler):
     Pages cannot send headers); app.py sends it as a header.
     """
 
-    CSP = (
-        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
-        "img-src 'self' data:; font-src 'self' data:; "
-        "connect-src 'self' https://learnwithclay.ai; frame-ancestors 'self'; "
-        "object-src 'none'; base-uri 'self'; form-action 'self'"
-    )
+    CSP = _policy.CSP
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=ROOT, **kwargs)
@@ -130,40 +133,43 @@ def sign_on(page):
 
 
 def wait_for_text(page, needle, timeout=30, selector="body"):
-    """Poll the DOM for a substring, from Python.
+    """Wait until a substring appears in a selector's text.
 
-    page.wait_for_function() is not usable here: it evaluates a string inside
-    the page, and the deploy's Content-Security-Policy (script-src 'self', no
-    'unsafe-eval') blocks that. Polling inner_text keeps the tests under the
-    same policy the site ships with.
+    This is page.wait_for_function, which is not blocked by the CSP: Chromium's
+    devtools evaluation is exempt, which is also why page.evaluate works in the
+    paste tests. The earlier polling loop here worked around a limit that does
+    not exist, and cost up to 45 s per failing assertion.
     """
-    import time
-
-    deadline = time.time() + timeout
-    needle = needle.lower()
-    while time.time() < deadline:
+    try:
+        page.wait_for_function(
+            "([sel, needle]) => {"
+            "  const el = document.querySelector(sel);"
+            "  return !!el && (el.innerText || '').toLowerCase().includes(needle);"
+            "}",
+            arg=[selector, needle.lower()],
+            timeout=int(timeout * 1000),
+        )
+    except PlaywrightTimeoutError:
+        body = ""
         try:
-            if needle in page.inner_text(selector).lower():
-                return True
+            body = page.inner_text(selector)[:400]
         except Exception:
             pass
-        page.wait_for_timeout(250)
-    raise AssertionError("timed out waiting for %r in %s" % (needle, selector))
+        raise AssertionError("timed out waiting for %r in %s; text was %r" % (needle, selector, body))
+    return True
 
 
 def wait_for_text_change(page, selector, previous, timeout=15):
-    """Poll until an element's text differs from `previous`.
-
-    Same reason as wait_for_text: no in-page eval under this CSP.
-    """
-    import time
-
-    deadline = time.time() + timeout
-    while time.time() < deadline:
-        try:
-            if page.inner_text(selector) != previous:
-                return True
-        except Exception:
-            pass
-        page.wait_for_timeout(200)
-    raise AssertionError("%s never changed away from %r" % (selector, previous))
+    """Wait until an element's text differs from `previous`."""
+    try:
+        page.wait_for_function(
+            "([sel, prev]) => {"
+            "  const el = document.querySelector(sel);"
+            "  return !!el && el.innerText !== prev;"
+            "}",
+            arg=[selector, previous],
+            timeout=int(timeout * 1000),
+        )
+    except PlaywrightTimeoutError:
+        raise AssertionError("%s never changed away from %r" % (selector, previous))
+    return True

@@ -1,0 +1,10 @@
+{
+  "_comment": "One source for the security policy. app.py sends these as headers, tests/conftest.py sends the Content-Security-Policy as a header too, and index.html carries the same policy in a meta tag (GitHub Pages cannot send headers). A meta policy cannot express frame-ancestors, so the meta variant is derived by dropping that one directive. tests/test_security_policy.py asserts all three agree.",
+  "headers": {
+    "X-Frame-Options": "SAMEORIGIN",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://learnwithclay.ai; frame-ancestors 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
+  }
+}

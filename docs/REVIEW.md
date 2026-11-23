@@ -78,7 +78,10 @@ the original path still fires.
 Acceptance criteria: a suicide disclosure in any shipped language reaches the
 988 block with the API down.
 
-## P1 (open, one issue each)
+## P1
+
+Items 4 through 10 are closed; the work and its evidence are in the commits that
+closed them, and the acceptance criteria are in the issue tracker.
 
 4. **Resolved.** **`i18n.js` shipped 359 KB raw / 85 KB gzipped to every visitor**, and was
    parsed before `app.js`. That is 39 percent of the page's gzipped weight
@@ -86,69 +89,71 @@ Acceptance criteria: a suicide disclosure in any shipped language reaches the
    of it. The table is now `i18n/<code>.js`, fetched on selection; English loads
    nothing. English first paint is 36 KB gzipped against 115 KB, and
    `tests/test_i18n_payload.py` holds the behaviour.
-5. **Images.** `aol-figure.png` is 328x360 and 82 KB to paint a 30x33 logo
-   (about 2 KB re-exported at 2x). `aim-logo.png` (20 KB) has zero references
-   in the repo. `win-flag.png` is fine.
-6. **The deploy publishes the repository, not the site.** GitHub Pages serves
-   the root as-is, and the retired Netlify project set `publish = "."`:
-   `curl -o /dev/null -w "%{http_code}" .../app.py` -> 200, and the same for
-   `tests/test_chat.py`. `app.py` has the same shape: `StaticFiles(directory=ROOT)`
-   serves everything under the root, so `HOST=0.0.0.0` publishes `.git/config`.
-   A `public/` publish directory, or an extension allowlist in `app.py`, closes it.
+5. **Resolved.** **Images.** `aol-figure.png` was 328x360 and 82 KB to paint a
+   30x33 logo; it is 60x66 and 1.5 KB now, 54x smaller, RMSE 4/255 against the
+   original downscale. `aim-logo.png` (20 KB) had zero references and is gone.
+   `tests/test_assets.py` keeps both from coming back.
+6. **Resolved.** **The deploy published the repository, not the site.** Pages
+   served the root as-is, so `app.py` and `tests/test_chat.py` fetched as 200.
+   The deploy now stages only the page: `tools/stage_site.sh` copies 24 files and
+   the `pages` workflow uploads that directory, with Pages switched from the
+   branch source to the Actions source. The public URL no longer serves app.py,
+   the tests, the README, or security.json. `app.py` still serves the repo root,
+   which is local only.
 7. **Resolved by retiring Netlify.** The live URL
    `https://learnwithclayparentadvisor.netlify.app/` returns 503
    `{"error":"usage_exceeded"}`. GitHub Pages is now the only deploys target, so
    the dead link is gone; an uptime check is still worth adding, because nothing
    in the repo would report a broken Pages build either.
-8. **The suite is not reproducible.** `requirements-dev.txt` uses `>=` for
-   pytest, playwright, fastapi and uvicorn, and CI installs it unpinned. A
-   Playwright major changes `route.fulfill` and `inner_text` semantics, so the
-   same commit can stop passing. Add `constraints.txt` with `==` and pass `-c`.
-9. **Accessibility.** `#chatTranscript` is `role="log" aria-live="polite"` while
-   `typeOut` rewrites `innerHTML` every animation frame, so a screen reader
-   queues an announcement per chunk of a long answer. Set `aria-busy` during the
-   reveal. The page also has no `<h1>` and no Open Graph tags (`grep -c 'og:' index.html`
-   -> 0), which costs the link preview when the page is pasted into email or chat.
-10. **Test gaps, and one wrong comment.** No test covers the menus,
-    preferences, the warn meter, save/copy, or drag and resize. And
-    `tests/conftest.py` says `page.wait_for_function` "is not usable here"
-    because CSP blocks in-page eval. It does not: `wait_for_function("() => true")`
-    runs against the CSP-serving fixture, which is also why `page.evaluate` works
-    in `test_pasted_html_is_not_trusted`. The two polling helpers work around a
-    bar that is not there, and their 45 s worst case is why the failure-path
-    test is slow.
+8. **Resolved.** **The suite was not reproducible.** `constraints.txt` pins all
+   four dependencies exactly, CI installs with `-c constraints.txt`, and
+   `tests/test_config.py` fails if a dependency loses its pin or CI drops the flag.
+9. **Resolved.** **Accessibility.** The transcript is `aria-busy` from the
+   question until the reveal settles, so the live region stops announcing every
+   frame. There is one visually hidden `<h1>` and a share card with absolute
+   `og:` URLs and a real image. `tests/test_ui.py` asserts all of it.
+10. **Resolved.** **Test gaps, and one wrong comment.** `tests/test_ui.py`
+    covers menus, preferences across a reload, the warn meter running out, saving
+    the transcript, the busy state, the heading and the share card.
+    `tests/test_routing.py` covers ten routing cases. The false CSP claim is gone:
+    the helpers are `wait_for_function` calls now, and 70 tests run in about 20 s.
 
 ## P2
 
-11. The security policy is copy-pasted into the meta tag in `index.html`,
-    `app.py` and `tests/conftest.py`, and two of the three comments say that
-    drift is the risk. Generate all three from one file and assert they match.
-12. `routeKey` matches `/right(s)?\b/` and `/school/` anywhere, so "my child
-    isn't sleeping right" returns the CRPD answer, and `/emergency/` fires a
-    crisis block for "emergency contact for the audiologist". Tighten to phrases.
-13. `app.py:46` annotates `-> FileResponse` on a handler declared
-    `response_class=HTMLResponse`, and only `/` gets `no-cache`; `/index.html`
-    is served with the hour cache.
+11. **Resolved.** `security.json` is the only place the policy is written;
+    `policy.py` reads it, `app.py` and the test server consume it, and the meta
+    tag is asserted equal to the derived meta form (`tests/test_config.py`).
+12. **Resolved.** The topic routes are phrases now, so "sleeping right" and
+    "emergency contact" no longer hijack an answer, and the plainest disclosure
+    ("I don't want to live") was added after it missed. `tests/test_routing.py`.
+15. **Resolved.** `tests/test_i18n_coverage.py` fails in both directions now.
+    Its first run found a real defect: all 17 tables carried a translation of
+    "A knowledge base your AI Agents control, where quality data provides better
+    results", copy from another product that is not on this page. Removed from
+    every table.
+
+Still open:
+
+13. `app.py` annotates `-> FileResponse` on a handler declared
+    `response_class=HTMLResponse`, and only `/` gets `no-cache`; `/index.html` is
+    served with whatever the host decides.
 14. `execCommand` is deprecated and behaves differently in Firefox and Safari.
     It works today; the replacement is a `beforeinput`/Range writer.
-15. Translations are keyed by exact English source text, which is what makes
-    switching back to English lossless, but a copy edit silently drops a
-    translation with no error. Add a test that collects every translatable
-    string from `app.js` and `index.html` and fails when one is missing from the
-    table.
 
 ## Reproduce
 
     git clone https://github.com/claytonvlawson/learnwithclayparentadvisor.git
     cd learnwithclayparentadvisor
     python3 -m venv .venv && . .venv/bin/activate
-    pip install -r requirements-dev.txt
+    pip install -r requirements-dev.txt -c constraints.txt
     python -m playwright install chromium
     python -m pytest -q
 
-    # the deploy exposes sources (while the mirror is up):
-    curl -s -o /dev/null -w '%{http_code}\n' \
-      https://claytonvlawson.github.io/learnwithclayparentadvisor/app.py
+    # the deploy ships the page, not the repository: both of these are 404
+    for f in app.py tests/test_chat.py; do
+      curl -s -o /dev/null -w "%{http_code}\n" \
+        "https://claytonvlawson.github.io/learnwithclayparentadvisor/$f"
+    done
 
     # payload weight:
     python3 -c "import gzip;print(len(gzip.compress(open('i18n.js','rb').read(),9)))"

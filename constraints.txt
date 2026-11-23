@@ -1,0 +1,7 @@
+# Exact versions for the suite that gates the deploy.
+# Install with:  pip install -r requirements-dev.txt -c constraints.txt
+# requirements-dev.txt stays >= so a contributor can move ahead; CI must not.
+pytest==8.4.2
+playwright==1.60.0
+fastapi==0.115.6
+uvicorn==0.34.0

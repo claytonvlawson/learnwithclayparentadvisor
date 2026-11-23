@@ -1355,6 +1355,7 @@
     ['buddylist', 'howtowin', 'imwin'].forEach(function (id) { setWin(id, 'closed'); });
     transcript.innerHTML = '';
     removeTyping(); inFlight = false; sendBtn.disabled = false;
+    transcript.setAttribute('aria-busy', 'false');
     $('#snInput').value = prefs.sn || 'VisitingParent';
     $('#snInput').focus();
     tone(523, 0, 0.1, 0.04); tone(392, 0.1, 0.14, 0.04);
@@ -1366,7 +1367,9 @@
     /suicide/i, /suicidal/i, /kill myself/i, /killing myself/i, /end my life/i,
     /want to die/i, /wanna die/i, /hurt(ing)? myself/i, /self[- ]?harm/i,
     /overdose/i, /abus(e|ed|ive)/i, /hitting me/i, /beat(ing)? me/i,
-    /emergency/i, /crisis/i, /unsafe/i, /scared for my (child|kid|son|daughter)/i
+    /don'?t want to (live|be here|exist)/i, /no reason to live/i,
+    /emergency room|this is an emergency|urgent help/i,
+    /crisis/i, /unsafe/i, /scared for my (child|kid|son|daughter)/i
   ];
 
   /* The page ships 18 languages, and this local router is the safety path that
@@ -1481,7 +1484,9 @@
     }
     if (/depriv/i.test(q) || /delay(ed)? (in )?(speech|language)/i.test(q) || /not (talk|speak)ing/i.test(q)) return 'deprivationAnswer';
     if (/\b(asl|sign(ing| language)?)\b/i.test(q) || /\bci\b/i.test(q) || /implant/i.test(q) || /cochlear/i.test(q)) return 'aslCiAnswer';
-    if (/crpd/i.test(q) || /right(s)?\b/i.test(q) || /school/i.test(q) || /\biep\b/i.test(q) || /\b504\b/.test(q) || /\blead-?k\b/i.test(q)) return 'crpdAnswer';
+    if (/crpd/i.test(q) || /\b(rights?)\b.{0,40}\b(school|schooling|education|iep|504)\b/i.test(q) ||
+        /\b(school|district|iep|504 plan)\b.{0,40}\brights?\b/i.test(q) ||
+        /\b(iep|504 plan|due process|least restrictive)\b/i.test(q) || /\blead-?k\b/i.test(q)) return 'crpdAnswer';
     return 'fallbackAnswer';
   }
 
@@ -1826,6 +1831,10 @@
     removeTyping();
     showTyping();
     sendBtn.disabled = true;
+    // The transcript is a live region that the typewriter rewrites every
+    // frame, which makes a screen reader queue an announcement per chunk.
+    // aria-busy keeps it quiet until the answer has settled.
+    transcript.setAttribute('aria-busy', 'true');
 
     var done = false;
     function finish(html) {
@@ -1835,6 +1844,7 @@
       removeTyping();
       sendBtn.disabled = false;
       addMessage(html, 'advisor');
+      transcript.setAttribute('aria-busy', 'false');
     }
 
     var timer = setTimeout(function () {
@@ -1853,7 +1863,9 @@
       var body = document.createElement('span');
       body.className = 'type-body';
       line.appendChild(body);
-      typeOut(line, answerText, tailHtml);
+      typeOut(line, answerText, tailHtml, function () {
+        transcript.setAttribute('aria-busy', 'false');
+      });
     }
 
     fetch(API, {

@@ -12,10 +12,27 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://learnwithclay.ai; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="description" content="Parent Advisor AIM Edition, a preview of a knowledge base your experts control and the assistant that answers out of it.">
 <title>Parent Advisor: AIM Edition</title>
+<!-- Shared in chat, email and Slack far more than it is searched, so the card
+     matters more than the crawler. Absolute URLs because a relative one is
+     ignored by most scrapers. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LearnWithClay">
+<meta property="og:title" content="Parent Advisor: AIM Edition">
+<meta property="og:description" content="A knowledge base your experts control, and the assistant that answers out of it. Answers cite the notes behind them.">
+<meta property="og:url" content="https://claytonvlawson.github.io/learnwithclayparentadvisor/">
+<meta property="og:image" content="https://claytonvlawson.github.io/learnwithclayparentadvisor/docs/im-window.png">
+<meta property="og:image:alt" content="The VaultAdvisor IM window answering a question with cited sources.">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23008080'/%3E%3Cg fill='%23ffd700' stroke='%23000' stroke-width='0.5'%3E%3Ccircle cx='9.5' cy='2.5' r='1.9'/%3E%3Cpath d='M8.8 4.2 L6.5 7.5 L4.5 6.5 L6 8.5 L4 12.5 L5.5 13.5 L7.2 9.8 L9 12 L8 14.5 L9.6 15.2 L11 11.8 L9.2 9.4 L10.8 7.2 L13.5 8.5 L14 7 L11 5.6 Z'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
+
+<!-- The page is a desktop imitation built out of divs, so the document outline
+     had no heading at all: a screen reader's heading list was empty and a
+     search engine had nothing to title the page with. Visually hidden because
+     the sign-on dialog carries the visible title. -->
+<h1 class="sr-only">Parent Advisor: a knowledge base your experts control, and the assistant that answers out of it</h1>
 
 <!-- ============ SIGN ON ============ -->
 <div id="signon">
